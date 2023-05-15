@@ -1,7 +1,7 @@
 //Defines the structure of a node in the graph
 struct Node {
-    isPerimeter: bool,
-    isChanged: bool,
+    is_perimeter: bool,
+    is_changed: bool,
     x: i32,
     y: i32,
     weight: i32,
@@ -12,14 +12,27 @@ struct Node {
 //Implementation of the node structure
 impl Node {
 
+    //Creates a new node
+    pub fn new(x: i32, y: i32) -> Node {
+        Node {
+            is_perimeter: false,
+            is_changed: false,
+            x,
+            y,
+            weight: 0,
+            input: 0,
+            output: 0,
+        }
+    }
+
     //Returns true if the node is on the perimeter
-    fn isPerimeter(&self) -> &bool {
-        &self.isPerimeter
+    fn is_perimeter(&self) -> &bool {
+        &self.is_perimeter
     }
 
     //Returns true if the node has been changed
-    fn isChanged(&self) -> &bool {
-        &self.isChanged
+    fn is_changed(&self) -> &bool {
+        &self.is_changed
     }
 
     //Returns the x coordinate of the node
@@ -53,13 +66,13 @@ impl Node {
     }
 
     //Mutable access to the perimeter status of the node
-    fn set_isPerimeter(&mut self) -> &mut bool {
-        &mut self.isPerimeter
+    fn set_is_perimeter(&mut self) -> &mut bool {
+        &mut self.is_perimeter
     }
 
     //Mutable access to the changed status of the node
-    fn set_isChanged(&mut self) -> &mut bool {
-        &mut self.isChanged
+    fn set_is_changed(&mut self) -> &mut bool {
+        &mut self.is_changed
     }
 
     //Mutable access to the x coordinate of the node
