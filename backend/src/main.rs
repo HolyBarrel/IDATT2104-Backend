@@ -2,6 +2,9 @@ use std::thread;
 use std::sync::{Arc, Mutex};
 use tungstenite::{WebSocket, Message, accept};
 use std::net::{TcpListener,TcpStream};
+mod structures;
+use structures::node::Node;
+
 
 fn main() {
     let server = TcpListener::bind("10.24.36.138:8765").unwrap();
