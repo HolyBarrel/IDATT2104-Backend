@@ -1,5 +1,8 @@
+use serde::{Serialize, Deserialize};
 //Defines the structure of a node in the graph
-struct Node {
+
+#[derive(Serialize, Deserialize)]
+pub struct Node {
     is_perimeter: bool,
     is_changed: bool,
     x: i32,
@@ -26,7 +29,29 @@ impl Node {
     }
 
     //Creates a new node with a weight
-    pub fn new_weighted(x: i32, y: i32, weight: i32) -> Node {
+    fn new_weighted(x: i32, y: i32, weight: i32) -> Node {
+        Node {
+            is_perimeter: false,
+            is_changed: false,
+            x,
+            y,
+            weight,
+            input: 0,
+            output: 0,
+        }
+    }
+
+
+    //Creates a new node from a given landscape
+    pub fn new_from_landscape(x: i32, y: i32, landscape: String) -> Node {
+        let weight = match landscape.as_str() {
+            "mountain" => 9,
+            "forest" => 6,
+            "water" => 1,
+            "field" => 2,
+            "city" => 7,
+            _ => 0,
+        };
         Node {
             is_perimeter: false,
             is_changed: false,
