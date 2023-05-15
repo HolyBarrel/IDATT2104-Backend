@@ -8,6 +8,7 @@ pub struct Node {
     x: i32,
     y: i32,
     weight: i32,
+    landscape: String,
     input: i32,
     output: i32,
 }
@@ -23,6 +24,7 @@ impl Node {
             x,
             y,
             weight: 0,
+            landscape: String::from("field"),
             input: 0,
             output: 0,
         }
@@ -36,28 +38,7 @@ impl Node {
             x,
             y,
             weight,
-            input: 0,
-            output: 0,
-        }
-    }
-
-
-    //Creates a new node from a given landscape
-    pub fn new_from_landscape(x: i32, y: i32, landscape: String) -> Node {
-        let weight = match landscape.as_str() {
-            "mountain" => 9,
-            "forest" => 6,
-            "water" => 1,
-            "field" => 2,
-            "city" => 7,
-            _ => 0,
-        };
-        Node {
-            is_perimeter: false,
-            is_changed: false,
-            x,
-            y,
-            weight,
+            landscape: String::from("field"),
             input: 0,
             output: 0,
         }
@@ -129,8 +110,22 @@ impl Node {
     }
 
     //Mutable access to the weight of the node
-    fn set_weight(&mut self) -> &mut i32 {
+    pub fn set_weight(&mut self) -> &mut i32 {
+        //Sets the weight of the node based on the landscape
+        self.weight = match self.landscape.as_str() {
+            "mountain" => 9,
+            "forest" => 6,
+            "water" => 1,
+            "field" => 2,
+            "city" => 7,
+            _ => 0,
+        };
         &mut self.weight
+    }
+
+    //Mutable access to the landscape of the node
+    fn set_landscape(&mut self, ) -> &mut String {
+        &mut self.landscape
     }
 
     //Mutable access to the input to the node
