@@ -8,6 +8,7 @@ pub struct Node {
     x: i32,
     y: i32,
     weight: i32,
+    landscape: String,
     input: i32,
     output: i32,
 }
@@ -23,6 +24,7 @@ impl Node {
             x,
             y,
             weight: 0,
+            landscape: String::from("field"),
             input: 0,
             output: 0,
         }
@@ -36,28 +38,7 @@ impl Node {
             x,
             y,
             weight,
-            input: 0,
-            output: 0,
-        }
-    }
-
-
-    //Creates a new node from a given landscape
-    pub fn new_from_landscape(x: i32, y: i32, landscape: String) -> Node {
-        let weight = match landscape.as_str() {
-            "mountain" => 9,
-            "forest" => 6,
-            "water" => 1,
-            "field" => 2,
-            "city" => 7,
-            _ => 0,
-        };
-        Node {
-            is_perimeter: false,
-            is_changed: false,
-            x,
-            y,
-            weight,
+            landscape: String::from("field"),
             input: 0,
             output: 0,
         }
@@ -84,7 +65,7 @@ impl Node {
     }
 
     //Returns the coordinate of the node
-    fn get_coor(&self) -> (&i32, &i32) {
+    pub fn get_coor(&self) -> (&i32, &i32) {
         (&self.x, &self.y)
     }
 
@@ -129,8 +110,22 @@ impl Node {
     }
 
     //Mutable access to the weight of the node
-    fn set_weight(&mut self) -> &mut i32 {
+    pub fn set_weight(&mut self) -> &mut i32 {
+        //Sets the weight of the node based on the landscape
+        self.weight = match self.landscape.as_str() {
+            "mountain" => 9,
+            "forest" => 6,
+            "water" => 1,
+            "field" => 2,
+            "city" => 7,
+            _ => 0,
+        };
         &mut self.weight
+    }
+
+    //Mutable access to the landscape of the node
+    fn set_landscape(&mut self, ) -> &mut String {
+        &mut self.landscape
     }
 
     //Mutable access to the input to the node
@@ -143,4 +138,49 @@ impl Node {
         &mut self.output
     }
 
+    //Finds the neighbouring nodes positions of this node
+    pub fn adj_positions(&self) -> Vec<(i32, i32)> {
+        let mut positions: Vec<(i32, i32)> = Vec::new();
+        let x = self.x;
+        let y = self.y;
+        
+        //Checks if the node is on the edge of the map
+        let left_edge = x == 0;
+        let right_edge = x == 99;
+        let top_edge = y == 0;
+        let bottom_edge = y == 99;
+
+        //If the node is on the edge of the map, only add the neighbouring nodes that are not inside the map
+        if !left_edge {
+            positions.push((x - 1, y));
+            if !top_edge {
+                positions.push((x - 1, y - 1));
+            }
+            if !bottom_edge {
+                positions.push((x - 1, y + 1));
+            }
+        }
+
+        if !right_edge {
+            positions.push((x + 1, y));
+            if !top_edge {
+                positions.push((x + 1, y - 1));
+            }
+            if !bottom_edge {
+                positions.push((x + 1, y + 1));
+            }
+        }
+
+        if !top_edge {
+            positions.push((x, y - 1));
+        }
+
+        if !bottom_edge {
+            positions.push((x, y + 1));
+        }
+
+        positions
+    }
+        
 }
+
