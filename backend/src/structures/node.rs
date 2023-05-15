@@ -25,6 +25,19 @@ impl Node {
         }
     }
 
+    //Creates a new node with a weight
+    pub fn new_weighted(x: i32, y: i32, weight: i32) -> Node {
+        Node {
+            is_perimeter: false,
+            is_changed: false,
+            x,
+            y,
+            weight,
+            input: 0,
+            output: 0,
+        }
+    }
+
     //Returns true if the node is on the perimeter
     fn is_perimeter(&self) -> &bool {
         &self.is_perimeter
