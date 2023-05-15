@@ -38,6 +38,28 @@ impl Node {
         }
     }
 
+    
+        //Creates a new node from a given landscape
+        pub fn new_from_landscape(x: i32, y: i32, landscape: String) -> Node {
+            let weight = match landscape {
+                "mountain" => 9,
+                "forest" => 6,
+                "water" => 1,
+                "field" => 2,
+                "city" => 7,
+                _ => 0,
+            };
+            Node {
+                is_perimeter: false,
+                is_changed: false,
+                x,
+                y,
+                weight,
+                input: 0,
+                output: 0,
+            }
+        }
+
     //Returns true if the node is on the perimeter
     fn is_perimeter(&self) -> &bool {
         &self.is_perimeter
