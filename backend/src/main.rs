@@ -6,6 +6,7 @@ use tungstenite::{WebSocket, Message, accept};
 use std::net::{TcpListener,TcpStream};
 mod structures;
 use structures::node::Node;
+use structures::dtoNode::NodeDTO;
 
 fn main() {
     let server = TcpListener::bind("10.24.36.138:8765").unwrap();
@@ -45,14 +46,16 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
     }
 }
 
-fn parse_json(msg: Message) -> Result<Node> {
+fn parse_json(msg: Message) -> Result<Vec<NodeDTO>> {
     match msg {
         Message::Text(text) => {
-            let node: Node = from_str(&text)?;
-            Ok(node)
+            let dto: Vec<NodeDTO> = from_str(&text)?;
+            Ok(dto)
         },
         _ => {
             Err(Error::custom("Not json parsable!"))
         }
     }
+
+    //TODO: MAKE A DTO FOR NODE FROM FRONT_END
 }
