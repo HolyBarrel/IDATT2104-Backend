@@ -84,7 +84,7 @@ impl Node {
     }
 
     //Returns the coordinate of the node
-    fn get_coor(&self) -> (&i32, &i32) {
+    pub fn get_coor(&self) -> (&i32, &i32) {
         (&self.x, &self.y)
     }
 
@@ -143,4 +143,49 @@ impl Node {
         &mut self.output
     }
 
+    //Finds the neighbouring nodes positions of this node
+    pub fn adj_positions(&self) -> Vec<(i32, i32)> {
+        let mut positions: Vec<(i32, i32)> = Vec::new();
+        let x = self.x;
+        let y = self.y;
+        
+        //Checks if the node is on the edge of the map
+        let left_edge = x == 0;
+        let right_edge = x == 99;
+        let top_edge = y == 0;
+        let bottom_edge = y == 99;
+
+        //If the node is on the edge of the map, only add the neighbouring nodes that are not inside the map
+        if !left_edge {
+            positions.push((x - 1, y));
+            if !top_edge {
+                positions.push((x - 1, y - 1));
+            }
+            if !bottom_edge {
+                positions.push((x - 1, y + 1));
+            }
+        }
+
+        if !right_edge {
+            positions.push((x + 1, y));
+            if !top_edge {
+                positions.push((x + 1, y - 1));
+            }
+            if !bottom_edge {
+                positions.push((x + 1, y + 1));
+            }
+        }
+
+        if !top_edge {
+            positions.push((x, y - 1));
+        }
+
+        if !bottom_edge {
+            positions.push((x, y + 1));
+        }
+
+        positions
+    }
+        
 }
+
