@@ -78,11 +78,15 @@
 
                 
 
-                let mut queue = NodeQueue::new_queue();
+                let queue = NodeQueue::new_queue();
                 {
                     let mut guard = board_lock.write().unwrap();
                     populate_board(&mut guard, node_clone);
-                    spread_signal(guard[10][10].clone(),&mut guard);
+                    let building_guard = buildings.read().unwrap();
+                    for x in building_guard.iter(){
+                        spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard);
+                    }
+                    
                 }
                 
                 let mut guard = board_lock.write().unwrap();
