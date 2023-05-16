@@ -1,3 +1,5 @@
+use super::dto::answerDTO;
+
 //Defines the structure of a node in the graph
 #[derive(Clone,Debug)]
 pub struct Node {
@@ -60,6 +62,14 @@ impl Node {
             building: String::from("none"),
             input: 0,
             output: 0,
+        }
+    }
+
+    pub fn convert_to_DTO(&self) -> answerDTO{
+        answerDTO{
+            x: self.x,
+            y: self.y,
+            power: self.output as f32
         }
     }
 
@@ -169,7 +179,7 @@ impl Node {
     pub fn set_input(&mut self, input: i32) -> &mut i32 {
         self.input = input;
         //Sets the output of the node based on the input and weight
-        self.output = self.input - (self.weight*10);
+        self.output = self.input; //- (self.weight*10);
         &mut self.input
     }
 

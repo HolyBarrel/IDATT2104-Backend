@@ -34,4 +34,5 @@ impl NodeQueue {
     pub fn get_queue(&self) -> &Queue::<Node> {
         &self.queue
     }
+
 }

@@ -29,6 +29,9 @@ impl NodeDTO{
         self.building.clone()
     }
 
+    
+    
+
     pub fn get_node(&self) -> Node{
         let mut answer_node = Node::new(*&self.x, *&self.y);
         match self.landscape.clone() {
@@ -53,9 +56,9 @@ impl NodeDTO{
 
 #[derive(Serialize,Deserialize)]
 pub struct  answerDTO{
-    x:i32,
-    y:i32,
-    power: f32
+    pub x:i32,
+    pub y:i32,
+    pub power: f32
 }
 
 impl answerDTO {

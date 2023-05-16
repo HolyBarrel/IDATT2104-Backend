@@ -76,13 +76,19 @@
                     guard[*node.get_x() as usize][*node.get_y() as usize] = node.get_node();
                 }
 
-                println!("Board = {:?}",board_lock);
+                
 
                 let mut queue = NodeQueue::new_queue();
+                {
+                    let mut guard = board_lock.write().unwrap();
+                    populate_board(&mut guard, node_clone);
+                    spread_signal(guard[99][95].clone(),&mut guard);
+                }
+                
                 let mut guard = board_lock.write().unwrap();
-                populate_board(&mut guard, node_clone);
-                //spread_signal(board[10][10].clone(),&mut board);
-                let text = to_string("Hi").unwrap();
+                let answerVec = convert_board_to_dto(&mut guard);
+                let text = to_string(&answerVec).unwrap();
+                //println!("Board = {:?}",board_lock);
                 socket.write_message(Message::Text(text)).unwrap();
             }
         }
@@ -98,6 +104,19 @@
                 Err(Error::custom("Not json parsable!"))
             }
         }
+    }
+
+    fn convert_board_to_dto(board: &mut RwLockWriteGuard<Vec<Vec<Node>>>) -> Vec<answerDTO> {
+        let mut nodes_dto = Vec::new();
+    
+        for row in board.iter() {
+            for node in row.iter() {
+                let answerDTO = node.convert_to_DTO();
+                nodes_dto.push(answerDTO);
+            }
+        }
+    
+        nodes_dto
     }
 
     fn populate_board(board: &mut RwLockWriteGuard<Vec<Vec<Node>>>, nodes: Vec<NodeDTO>) {
@@ -125,10 +144,22 @@
                 let y_usize = y as usize;
                 let signal_strength = 100;
                 let mut neighbour = board[x_usize][y_usize].clone();
-                neighbour.set_building(board[x_usize][y_usize].get_building().to_owned());
-                neighbour.set_landscape(board[x_usize][y_usize].get_landscape().to_owned());
-                neighbour.set_input(signal_strength);
+                let int = neighbour.set_input(signal_strength);
+                println!("{:?}", int);
                 queue.add(neighbour);
+            }
+        }
+        println!("{:?}", queue);
+        while (queue.size() >1) {
+            let node = queue.pop_first();
+            match node {
+                Ok(value) =>{
+                    let x = value.clone();
+                    board[*x.get_x() as usize][*x.get_y() as usize] = value;
+                }
+                Err( error) =>{
+
+                }
             }
         }
     }
