@@ -1,15 +1,14 @@
 use crate::structures::node::Node;
 use queues::*;
-use std::collections::HashSet;
 
 //Defines a node queue struct
-struct NodeQueue {
-    queue: Queue::<Node>::new(),
+pub struct NodeQueue {
+    queue: Queue<Node>,
 }
 
 //Implementation of the node queue struct
 impl NodeQueue {
-    pub fn new() -> NodeQueue {
+    pub fn new_queue() -> NodeQueue {
         NodeQueue {
         queue: Queue::<Node>::new(),
         }
@@ -20,33 +19,18 @@ impl NodeQueue {
         self.queue.add(node);
     }
 
-    //Removes a node from the queue
-    pub fn remove(&mut self) -> Option<Node> {
+    // Removes a node from the front of the queue and returns it
+    pub fn pop_first(&mut self) -> Result<Node, &str> {
         self.queue.remove()
     }
 
-    //Removes the first node from the queue
-    pub fn remove_first(&mut self) -> Option<Node> {
-        self.queue.remove_first()
+    //Returns the size of the queue
+    pub fn size(&self) -> usize {
+        self.queue.size()
     }
 
-    //Pops the last node from the queue
-    pub fn pop(&mut self) -> Option<Node> {
-        self.queue.pop()
-    }
-
-    //Peek the first node from the queue
-    pub fn peek(&self) -> Option<&Node> {
-        self.queue.peek()
-    }
-
-    //Returns true if the queue is empty
-    pub fn is_empty(&self) -> bool {
-        self.queue.is_empty()
-    }
-
-    //Returns the length of the queue
-    pub fn len(&self) -> usize {
-        self.queue.len()
+    //Returns the queue
+    pub fn get_queue(&self) -> &Queue::<Node> {
+        &self.queue
     }
 }

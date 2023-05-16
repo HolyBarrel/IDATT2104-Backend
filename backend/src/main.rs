@@ -5,8 +5,10 @@ use serde_json::{Result, Value, from_str, to_string};
 use tungstenite::{WebSocket, Message, accept};
 use std::net::{TcpListener,TcpStream};
 mod structures;
-use structures::node::Node;
 use structures::dto::NodeDTO;
+use structures::node::Node;
+use structures::node_queue::NodeQueue;
+use std::collections::HashSet;
 
 fn main() {
     let server = TcpListener::bind("127.0.0.1:8765").unwrap();
@@ -56,6 +58,19 @@ fn parse_json(msg: Message) -> Result<Vec<NodeDTO>> {
             Err(Error::custom("Not json parsable!"))
         }
     }
+}
 
-    //TODO: MAKE A DTO FOR NODE FROM FRONT_END
+//Takes in a node and adds all of its neighbors to the queue
+fn spread_signal(node: Node, queue: &mut NodeQueue) {
+    /*
+    let mut visited: HashSet<Node> = HashSet::new();
+    let neighbor_positions = node.adj_positions();
+    for position in neighbor_positions {
+        let neighbor = Node::new(position.0, position.1);
+        if !visited.contains(&neighbor) {
+            queue.add(neighbor);
+            visited.insert(neighbor);
+        }
+    }
+    */
 }
