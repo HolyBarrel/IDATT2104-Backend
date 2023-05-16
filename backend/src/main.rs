@@ -35,10 +35,10 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
     let vec_buildings:Vec<Building> = vec![];
     let buildings = Arc::new(RwLock::new(vec_buildings));
     let mut board: Vec<Vec<Node>> = vec![];
-    /*for i in 0..99{
+    for i in 0..99{
         let mut temp:Vec<Node> = vec![Node::new(-1, -1);100];
         board.push(temp);
-    }*/
+    }
     while let Ok(msg) = socket.read_message() {
         let network_type_clone= network_type.clone();
         if msg.is_binary() || msg.is_text() {
