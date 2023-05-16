@@ -2,18 +2,18 @@
 pub struct Building {
     x: i32,
     y: i32,
-    structure_type: String,
+    building_type: String,
 }
 
 //Implementation of the building structure
 impl Building {
 
     //Creates a new building
-    pub fn new(x: i32, y: i32, structure_type: String) -> Building {
+    pub fn new(x: i32, y: i32, building_type: String) -> Building {
         Building {
             x,
             y,
-            structure_type,
+            building_type,
         }
     }
 
@@ -29,7 +29,7 @@ impl Building {
 
     //Returns the type of the building
     pub fn get_type(&self) -> &String {
-        &self.structure_type
+        &self.building_type
     }
 
     //Sets the x coordinate of the building
@@ -43,8 +43,8 @@ impl Building {
     }
 
     //Sets the type of the building
-    pub fn set_type(&mut self, structure_type: String) {
-        self.structure_type = structure_type;
+    pub fn set_type(&mut self, building_type: String) {
+        self.building_type = building_type;
     }
 
 
