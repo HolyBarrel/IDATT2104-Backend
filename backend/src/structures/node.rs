@@ -179,7 +179,12 @@ impl Node {
     pub fn set_input(&mut self, input: i32) -> &mut i32 {
         self.input = input;
         //Sets the output of the node based on the input and weight
-        self.output = self.input; //- (self.weight*10);
+        if self.input < 2 {
+            self.output = 0;
+        } else {
+            self.output = self.input - (self.weight*10);
+        }
+
         &mut self.input
     }
 
