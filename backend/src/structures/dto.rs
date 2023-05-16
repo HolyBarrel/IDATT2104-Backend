@@ -20,12 +20,12 @@ impl NodeDTO{
         &self.y
     }
 
-    pub fn get_landscape(&self) ->&String{
-        self.landscape.as_ref().unwrap()
+    pub fn get_landscape(&self) ->Option<String>{
+        self.landscape.clone()
     }
 
-    pub fn get_building(&self) ->&str{
-        self.building.as_ref().unwrap()
+    pub fn get_building(&self) ->Option<String>{
+        self.landscape.clone()
     }
 }
 
