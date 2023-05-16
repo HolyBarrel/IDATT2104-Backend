@@ -2,6 +2,7 @@ use crate::structures::node::Node;
 use queues::*;
 
 //Defines a node queue struct
+#[derive(Debug)]
 pub struct NodeQueue {
     queue: Queue<Node>,
 }
@@ -33,4 +34,5 @@ impl NodeQueue {
     pub fn get_queue(&self) -> &Queue::<Node> {
         &self.queue
     }
+
 }

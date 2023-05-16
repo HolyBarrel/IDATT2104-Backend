@@ -1,4 +1,5 @@
 //Defines the structure of a node in the graph
+#[derive(Clone,Debug)]
 pub struct Building {
     x: i32,
     y: i32,
