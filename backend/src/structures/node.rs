@@ -31,6 +31,23 @@ impl Node {
         }
     }
 
+        //Creates a new node from usizes
+        pub fn new_from_usize(x: usize, y: usize) -> Node {
+            Node {
+                is_perimeter: false,
+                is_changed: false,
+                x: x as i32,
+                y : y as i32,
+                weight: 0,
+                landscape: String::from("field"),
+                building: String::from("none"),
+                input: 0,
+                output: 0,
+    
+            }
+        }
+    
+
     //Creates a new node with a weight
     pub fn new_weighted(x: i32, y: i32, weight: i32) -> Node {
         Node {
@@ -135,13 +152,16 @@ impl Node {
         &mut self.weight
     }
 
-    //Mutable access to the landscape of the node
-    pub fn set_landscape(&mut self, ) -> &mut String {
+    //Sets the landscape of the node
+    pub fn set_landscape(&mut self, landscape: String) -> &mut String {
+        self.landscape = landscape;
         &mut self.landscape
     }
+    
 
-    //Mutable access to the building of the node    
-    pub fn set_building(&mut self) -> &mut String {
+    //Sets the building of the node
+    pub fn set_building(&mut self, building: String) -> &mut String {
+        self.building = building;
         &mut self.building
     }
 
