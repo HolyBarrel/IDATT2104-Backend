@@ -116,12 +116,16 @@ fn populate_board(board: &mut Vec<Vec<Node>>, nodes: Vec<NodeDTO>) {
 fn spread_signal(node: Node, queue: &mut NodeQueue, board: &mut Vec<Vec<Node>>) {
     let mut neighbour_positions = node.adj_positions();
     for position in neighbour_positions {
-        let x = position.0 as usize;
-        let y = position.1 as usize;
-        let signal_strength = 100;
-        let mut neighbour = board[x][y].clone();
-        neighbour.set_input(signal_strength);
-        queue.add(neighbour);
+        let x = position.0;
+        let y = position.1;
+        if x >= 0 && x < 100 && y >= 0 && y < 100 {
+            let x_usize = x as usize;
+            let y_usize = y as usize;
+            let signal_strength = 100;
+            let mut neighbour = board[x_usize][y_usize].clone();
+            neighbour.set_input(signal_strength);
+            queue.add(neighbour);
+        }
     }
 }
 
