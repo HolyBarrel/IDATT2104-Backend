@@ -26,7 +26,7 @@ impl NodeDTO{
     }
 
     pub fn get_building(&self) ->Option<String>{
-        self.landscape.clone()
+        self.building.clone()
     }
 
     pub fn get_node(&self) -> Node{

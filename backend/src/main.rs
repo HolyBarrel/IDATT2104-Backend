@@ -45,7 +45,7 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
 
             let mut msgClone = msg.clone();
             let textMsg = msgClone.to_text().unwrap();
-            println!("{:?}", msgClone);
+            //println!("{:?}", msgClone);
             if(textMsg.starts_with("?")){
                 let subText = &textMsg[1..];
                 let mut guard = network_type_clone.write().unwrap();
@@ -63,25 +63,29 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
             
             let mut node_clone = vec![];
 
-            //TODO: FIX BUILDING NAME 
             //let mut answer = vec![];
             for a in nodes {
                 node_clone.push(a.clone());
                 match a.get_building(){
                     Some(value) =>{
+                        println!("{:?}",value);
                         let mut guard = buildings.write().unwrap();
                         guard.push(Building::new(*a.get_x(), *a.get_y(), value));
                     } 
                     None =>{
                     } 
                 }
+                
+                board[*a.get_x() as usize][*a.get_y() as usize] = a.get_node();
             }
+
+
             let mut queue = NodeQueue::new_queue();
             populate_board(&mut board, node_clone);
-            println!("{:?}", buildings);
-            //spread_signal(board[10][10].clone(), &mut queue, &mut board);
-            println!("Queue = {:?}", queue);
-
+            //println!("{:?}", buildings);
+            spread_signal(board[10][10].clone(),&mut board);
+            //println!("Queue = {:?}", queue);
+            //println!(" Board = {:?}", board);
             let text = to_string("Hi").unwrap();
             socket.write_message(Message::Text(text)).unwrap();
         }
@@ -115,7 +119,8 @@ fn populate_board(board: &mut Vec<Vec<Node>>, nodes: Vec<NodeDTO>) {
 }
 
 //Takes in a node and adds all of its neighbors to the queue
-fn spread_signal(node: Node, queue: &mut NodeQueue, board: &mut Vec<Vec<Node>>) {
+fn spread_signal(node: Node, board: &mut Vec<Vec<Node>>) {
+    let mut queue = NodeQueue::new_queue();
     let mut neighbour_positions = node.adj_positions();
     for position in neighbour_positions {
         let x = position.0;
@@ -131,5 +136,6 @@ fn spread_signal(node: Node, queue: &mut NodeQueue, board: &mut Vec<Vec<Node>>) 
             queue.add(neighbour);
         }
     }
+    //println!("{:?}", queue)
 }
 
