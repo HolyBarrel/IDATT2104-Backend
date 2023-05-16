@@ -1,5 +1,5 @@
 use std::thread;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use serde::de::Error;
 use serde_json::{Result, Value, from_str, to_string};
 use tungstenite::{WebSocket, Message, accept};
@@ -28,9 +28,21 @@ fn main() {
 }
 
 fn handle_connection(socket: &mut WebSocket<TcpStream>) {
+    let network_type = Arc::new(RwLock::new("5G".to_string()));
     while let Ok(msg) = socket.read_message() {
+        let network_type_clone= network_type.clone();
         if msg.is_binary() || msg.is_text() {
             println!("Received message: {:?}", msg);
+
+            let mut msgClone = msg.clone();
+            let textMsg = msgClone.to_text().unwrap();
+            if(textMsg.starts_with("?")){
+                let subText = &textMsg[1..];
+                let mut guard = network_type_clone.write().unwrap();
+                *guard = subText.to_string();
+                println!("New network type {:?}",subText)
+            }
+
             let nodes = match parse_json(msg) {
                 Ok(nodes) => nodes,
                 Err(e) => {
