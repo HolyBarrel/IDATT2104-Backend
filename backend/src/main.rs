@@ -104,7 +104,10 @@ fn spread_signal(node: Node, queue: &mut NodeQueue, board: &mut Vec<Vec<Node>>) 
     for position in neighbour_positions {
         let x = position.0 as usize;
         let y = position.1 as usize;
-        let neighbour = board[x][y].clone();
+        let signal_strength = 100;
+        let mut neighbour = board[x][y].clone();
+        neighbour.set_input(signal_strength);
         queue.add(neighbour);
     }
 }
+

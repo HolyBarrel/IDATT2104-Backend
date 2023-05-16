@@ -165,13 +165,17 @@ impl Node {
         &mut self.building
     }
 
-    //Mutable access to the input to the node
-    pub fn set_input(&mut self) -> &mut i32 {
+    //Sets the input of the node
+    pub fn set_input(&mut self, input: i32) -> &mut i32 {
+        self.input = input;
+        //Sets the output of the node based on the input and weight
+        self.output = self.input - (self.weight*10);
         &mut self.input
     }
 
-    //Mutable access to the output of the node
-    pub fn set_output(&mut self) -> &mut i32 {
+    //Sets the output of the node
+    pub fn set_output(&mut self, output: i32) -> &mut i32 {
+        self.output = output;
         &mut self.output
     }
 
