@@ -6,7 +6,7 @@ use tungstenite::{WebSocket, Message, accept};
 use std::net::{TcpListener,TcpStream};
 mod structures;
 use structures::node::Node;
-use structures::dtoNode::NodeDTO;
+use structures::dto::NodeDTO;
 
 fn main() {
     let server = TcpListener::bind("10.24.36.138:8765").unwrap();
