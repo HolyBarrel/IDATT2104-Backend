@@ -1,5 +1,5 @@
 //Defines the structure of a node in the graph
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct Node {
     is_perimeter: bool,
     is_changed: bool,

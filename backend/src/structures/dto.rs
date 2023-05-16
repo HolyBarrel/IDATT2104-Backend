@@ -1,7 +1,8 @@
 use serde::{Serialize, Deserialize};
+use super::node::Node;
 //Defines the structure of a node in the graph
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize,Clone)]
 pub struct NodeDTO{
     x: i32,
     y: i32,
@@ -26,6 +27,10 @@ impl NodeDTO{
 
     pub fn get_building(&self) ->Option<String>{
         self.landscape.clone()
+    }
+
+    pub fn get_node(&self) -> Node{
+        Node::new(*&self.x, *&self.y)
     }
 }
 
