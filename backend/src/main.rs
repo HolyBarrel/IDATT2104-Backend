@@ -84,17 +84,27 @@ fn parse_json(msg: Message) -> Result<Vec<NodeDTO>> {
     }
 }
 
-//Takes in a node and adds all of its neighbors to the queue
-fn spread_signal(node: Node, queue: &mut NodeQueue) {
-    /*
-    let mut visited: HashSet<Node> = HashSet::new();
-    let neighbor_positions = node.adj_positions();
-    for position in neighbor_positions {
-        let neighbor = Node::new(position.0, position.1);
-        if !visited.contains(&neighbor) {
-            queue.add(neighbor);
-            visited.insert(neighbor);
-        }
+fn populate_board(board: &mut Vec<Vec<Node>>, nodes: Vec<NodeDTO>) {
+    for node in nodes {
+        let x = *node.get_x() as usize;
+        let y = *node.get_y() as usize;
+        let landscape = node.get_landscape();
+        let building = node.get_building();
+        let mut node = Node::new_from_usize(x, y);
+        node.set_landscape(landscape.to_string());
+        node.set_building(building.to_owned());
+        node.set_weight();
+        board[x][y] = node
     }
-    */
+}
+
+//Takes in a node and adds all of its neighbors to the queue
+fn spread_signal(node: Node, queue: &mut NodeQueue, board: &mut Vec<Vec<Node>>) {
+    let mut neighbour_positions = node.adj_positions();
+    for position in neighbour_positions {
+        let x = position.0 as usize;
+        let y = position.1 as usize;
+        let neighbour = board[x][y].clone();
+        queue.add(neighbour);
+    }
 }
