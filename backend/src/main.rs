@@ -10,6 +10,7 @@ use structures::node::Node;
 use structures::node_queue::NodeQueue;
 use std::collections::HashSet;
 use structures::dto::answerDTO;
+use structures::building::Building;
 
 fn main() {
     let server = TcpListener::bind("127.0.0.1:8765").unwrap();
@@ -31,6 +32,8 @@ fn main() {
 
 fn handle_connection(socket: &mut WebSocket<TcpStream>) {
     let network_type = Arc::new(RwLock::new("5G".to_string()));
+    let vec_buildings:Vec<Building> = vec![];
+    let buildings = Arc::new(RwLock::new(vec_buildings));
     while let Ok(msg) = socket.read_message() {
         let network_type_clone= network_type.clone();
         if msg.is_binary() || msg.is_text() {
@@ -52,11 +55,18 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                     continue;
                 }
             };
-            let mut answer = vec![];
+           // let mut answer = vec![];
             for a in nodes {
-                answer.push(answerDTO::new(*a.get_x(),*a.get_y()));
+                match a.get_building(){
+                    Some(value) =>{
+                        let mut guard = buildings.write().unwrap();
+                        guard.push(Building::new(*a.get_x(), *a.get_y(), value));
+                    } 
+                    None =>{
+                    } 
+                }
             }
-            let text = to_string(&answer).unwrap();
+            let text = to_string("Hi").unwrap();
             socket.write_message(Message::Text(text)).unwrap();
         }
     }
