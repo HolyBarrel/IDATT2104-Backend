@@ -1,7 +1,5 @@
-use serde::{Serialize, Deserialize};
 //Defines the structure of a node in the graph
-
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct Node {
     is_perimeter: bool,
     is_changed: bool,
@@ -9,6 +7,7 @@ pub struct Node {
     y: i32,
     weight: i32,
     landscape: String,
+    building: String,
     input: i32,
     output: i32,
 }
@@ -25,13 +24,15 @@ impl Node {
             y,
             weight: 0,
             landscape: String::from("field"),
+            building: String::from("none"),
             input: 0,
             output: 0,
+
         }
     }
 
     //Creates a new node with a weight
-    fn new_weighted(x: i32, y: i32, weight: i32) -> Node {
+    pub fn new_weighted(x: i32, y: i32, weight: i32) -> Node {
         Node {
             is_perimeter: false,
             is_changed: false,
@@ -39,28 +40,29 @@ impl Node {
             y,
             weight,
             landscape: String::from("field"),
+            building: String::from("none"),
             input: 0,
             output: 0,
         }
     }
 
     //Returns true if the node is on the perimeter
-    fn is_perimeter(&self) -> &bool {
+    pub fn is_perimeter(&self) -> &bool {
         &self.is_perimeter
     }
 
     //Returns true if the node has been changed
-    fn is_changed(&self) -> &bool {
+    pub fn is_changed(&self) -> &bool {
         &self.is_changed
     }
 
     //Returns the x coordinate of the node
-    fn get_x(&self) -> &i32 {
+    pub fn get_x(&self) -> &i32 {
         &self.x
     }
 
     //Returns the y coordinate of the node
-    fn get_y(&self) -> &i32 {
+    pub fn get_y(&self) -> &i32 {
         &self.y
     }
 
@@ -70,42 +72,52 @@ impl Node {
     }
 
     //Returns the weight of the node
-    fn get_weight(&self) -> &i32 {
+    pub fn get_weight(&self) -> &i32 {
         &self.weight
     }
 
+    //Returns the landscape of the node
+    pub fn get_landscape(&self) -> &String {
+        &self.landscape
+    }
+
+    //Returns the building of the node
+    pub fn get_building(&self) -> &String {
+        &self.building
+    }
+
     // Returns the input to the node
-    fn get_input(&self) -> &i32 {
+    pub fn get_input(&self) -> &i32 {
         &self.input
     }
 
     //Returns the output from the node
-    fn get_output(&self) -> &i32 {
+    pub fn get_output(&self) -> &i32 {
         &self.output
     }
 
     //Mutable access to the perimeter status of the node
-    fn set_is_perimeter(&mut self) -> &mut bool {
+    pub fn set_is_perimeter(&mut self) -> &mut bool {
         &mut self.is_perimeter
     }
 
     //Mutable access to the changed status of the node
-    fn set_is_changed(&mut self) -> &mut bool {
+    pub fn set_is_changed(&mut self) -> &mut bool {
         &mut self.is_changed
     }
 
     //Mutable access to the x coordinate of the node
-    fn set_x(&mut self) -> &mut i32 {
+    pub fn set_x(&mut self) -> &mut i32 {
         &mut self.x
     }
 
     //Mutable access to the y coordinate of the node
-    fn set_y(&mut self) -> &mut i32 {
+    pub fn set_y(&mut self) -> &mut i32 {
         &mut self.y
     }
 
     //Mutable access to the coordinate of the node
-    fn set_coor(&mut self) -> (&mut i32, &mut i32) {
+    pub fn set_coor(&mut self) -> (&mut i32, &mut i32) {
         (&mut self.x, &mut self.y)
     }
 
@@ -124,17 +136,22 @@ impl Node {
     }
 
     //Mutable access to the landscape of the node
-    fn set_landscape(&mut self, ) -> &mut String {
+    pub fn set_landscape(&mut self, ) -> &mut String {
         &mut self.landscape
     }
 
+    //Mutable access to the building of the node    
+    pub fn set_building(&mut self) -> &mut String {
+        &mut self.building
+    }
+
     //Mutable access to the input to the node
-    fn set_input(&mut self) -> &mut i32 {
+    pub fn set_input(&mut self) -> &mut i32 {
         &mut self.input
     }
 
     //Mutable access to the output of the node
-    fn set_output(&mut self) -> &mut i32 {
+    pub fn set_output(&mut self) -> &mut i32 {
         &mut self.output
     }
 
