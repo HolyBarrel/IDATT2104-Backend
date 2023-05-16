@@ -88,8 +88,8 @@ fn populate_board(board: &mut Vec<Vec<Node>>, nodes: Vec<NodeDTO>) {
     for node in nodes {
         let x = *node.get_x() as usize;
         let y = *node.get_y() as usize;
-        let landscape = node.get_landscape();
-        let building = node.get_building();
+        let landscape = node.get_landscape().unwrap_or("field".to_string());
+        let building = node.get_building().unwrap_or("none".to_string());
         let mut node = Node::new_from_usize(x, y);
         node.set_landscape(landscape.to_string());
         node.set_building(building.to_owned());
