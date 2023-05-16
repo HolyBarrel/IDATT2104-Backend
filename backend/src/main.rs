@@ -9,7 +9,7 @@ use structures::node::Node;
 use structures::dto::NodeDTO;
 
 fn main() {
-    let server = TcpListener::bind("10.24.36.138:8765").unwrap();
+    let server = TcpListener::bind("127.0.0.1:8765").unwrap();
     let connections = Arc::new(Mutex::new(Vec::new()));
 
     for stream in server.incoming() {
