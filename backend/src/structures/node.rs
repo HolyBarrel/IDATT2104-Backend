@@ -37,7 +37,7 @@ impl Node {
                 is_perimeter: false,
                 is_changed: false,
                 x: x as i32,
-                y : y as i32,
+                y: y as i32,
                 weight: 0,
                 landscape: String::from("field"),
                 building: String::from("none"),

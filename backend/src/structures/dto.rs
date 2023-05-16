@@ -30,7 +30,24 @@ impl NodeDTO{
     }
 
     pub fn get_node(&self) -> Node{
-        Node::new(*&self.x, *&self.y)
+        let mut answer_node = Node::new(*&self.x, *&self.y);
+        match self.landscape.clone() {
+            Some(value)=>{
+                answer_node.set_landscape(self.landscape.clone().unwrap());
+            }
+            None=>{
+                answer_node.set_landscape("field".to_string());
+            }
+        }
+        match self.building.clone() {
+            Some(value)=>{
+                answer_node.set_landscape(self.building.clone().unwrap());
+            }
+            None=>{
+                answer_node.set_landscape("none".to_string());
+            }
+        }
+        return answer_node;
     }
 }
 
