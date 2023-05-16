@@ -82,7 +82,7 @@
                 {
                     let mut guard = board_lock.write().unwrap();
                     populate_board(&mut guard, node_clone);
-                    spread_signal(guard[99][95].clone(),&mut guard);
+                    spread_signal(guard[10][10].clone(),&mut guard);
                 }
                 
                 let mut guard = board_lock.write().unwrap();
