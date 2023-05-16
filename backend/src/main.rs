@@ -150,7 +150,7 @@
             }
         }
         println!("{:?}", queue);
-        while (queue.size() >1) {
+        while (queue.size() >0) {
             let node = queue.pop_first();
             match node {
                 Ok(value) =>{
