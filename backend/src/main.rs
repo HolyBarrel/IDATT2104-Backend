@@ -34,6 +34,11 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
     let network_type = Arc::new(RwLock::new("5G".to_string()));
     let vec_buildings:Vec<Building> = vec![];
     let buildings = Arc::new(RwLock::new(vec_buildings));
+    let mut board: Vec<Vec<Node>> = vec![];
+    /*for i in 0..99{
+        let mut temp:Vec<Node> = vec![Node::new(-1, -1);100];
+        board.push(temp);
+    }*/
     while let Ok(msg) = socket.read_message() {
         let network_type_clone= network_type.clone();
         if msg.is_binary() || msg.is_text() {
@@ -48,15 +53,22 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 println!("New network type {:?}",subText)
             }
 
-            let nodes = match parse_json(msg) {
+
+
+            let mut nodes = match parse_json(msg) {
                 Ok(nodes) => nodes,
                 Err(e) => {
                     println!("Failed to parse message: {:?}", e);
                     continue;
                 }
             };
-           // let mut answer = vec![];
+            
+            let mut node_clone = vec![];
+
+
+           //let mut answer = vec![];
             for a in nodes {
+                node_clone.push(a.clone());
                 match a.get_building(){
                     Some(value) =>{
                         let mut guard = buildings.write().unwrap();
@@ -66,7 +78,9 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                     } 
                 }
             }
+            populate_board(&mut board, node_clone);
             let text = to_string("Hi").unwrap();
+            println!("{:?}",&board);
             socket.write_message(Message::Text(text)).unwrap();
         }
     }
