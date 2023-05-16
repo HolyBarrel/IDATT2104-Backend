@@ -77,6 +77,8 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 }
                 
                 board[*a.get_x() as usize][*a.get_y() as usize] = a.get_node();
+                //println!("REAL NODE {:?}", a.get_node());
+                //println!("iN BOARD = {:?}", board[*a.get_x() as usize][*a.get_y() as usize])
             }
 
 
