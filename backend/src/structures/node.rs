@@ -1,7 +1,4 @@
-use serde::{Serialize, Deserialize};
 //Defines the structure of a node in the graph
-
-#[derive(Serialize, Deserialize)]
 pub struct Node {
     is_perimeter: bool,
     is_changed: bool,
@@ -9,6 +6,7 @@ pub struct Node {
     y: i32,
     weight: i32,
     landscape: String,
+    building: String,
     input: i32,
     output: i32,
 }
@@ -25,8 +23,10 @@ impl Node {
             y,
             weight: 0,
             landscape: String::from("field"),
+
             input: 0,
             output: 0,
+
         }
     }
 
