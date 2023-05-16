@@ -125,6 +125,8 @@ fn spread_signal(node: Node, queue: &mut NodeQueue, board: &mut Vec<Vec<Node>>) 
             let y_usize = y as usize;
             let signal_strength = 100;
             let mut neighbour = board[x_usize][y_usize].clone();
+            neighbour.set_building(board[x_usize][y_usize].get_building().to_owned());
+            neighbour.set_landscape(board[x_usize][y_usize].get_landscape().to_owned());
             neighbour.set_input(signal_strength);
             queue.add(neighbour);
         }
