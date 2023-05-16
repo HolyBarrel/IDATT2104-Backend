@@ -13,7 +13,7 @@ use structures::dto::answerDTO;
 use structures::building::Building;
 
 fn main() {
-    let server = TcpListener::bind("127.0.0.1:8765").unwrap();
+    let server = TcpListener::bind("192.168.0.188:8765").unwrap();
     let connections = Arc::new(Mutex::new(Vec::new()));
 
     for stream in server.incoming() {
@@ -42,15 +42,14 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
     while let Ok(msg) = socket.read_message() {
         let network_type_clone= network_type.clone();
         if msg.is_binary() || msg.is_text() {
-            println!("Received message: {:?}", msg);
 
             let mut msgClone = msg.clone();
             let textMsg = msgClone.to_text().unwrap();
+            println!("{:?}", msgClone);
             if(textMsg.starts_with("?")){
                 let subText = &textMsg[1..];
                 let mut guard = network_type_clone.write().unwrap();
                 *guard = subText.to_string();
-                println!("New network type {:?}",subText)
             }
 
 
@@ -58,15 +57,14 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
             let mut nodes = match parse_json(msg) {
                 Ok(nodes) => nodes,
                 Err(e) => {
-                    println!("Failed to parse message: {:?}", e);
                     continue;
                 }
             };
             
             let mut node_clone = vec![];
 
-
-           //let mut answer = vec![];
+            //TODO: FIX BUILDING NAME 
+            //let mut answer = vec![];
             for a in nodes {
                 node_clone.push(a.clone());
                 match a.get_building(){
@@ -78,9 +76,13 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                     } 
                 }
             }
+            let mut queue = NodeQueue::new_queue();
             populate_board(&mut board, node_clone);
+            println!("{:?}", buildings);
+            //spread_signal(board[10][10].clone(), &mut queue, &mut board);
+            println!("Queue = {:?}", queue);
+
             let text = to_string("Hi").unwrap();
-            println!("{:?}",&board);
             socket.write_message(Message::Text(text)).unwrap();
         }
     }
