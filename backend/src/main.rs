@@ -12,9 +12,10 @@ use std::collections::HashSet;
 use structures::dto::answerDTO;
 use structures::building::Building;
 use std::sync::RwLockWriteGuard;
+use queues::*;
 
 fn main() {
-    let server = TcpListener::bind("127.0.0.1:8765").unwrap();
+    let server = TcpListener::bind("10.22.6.113:8765").unwrap();
     let connections = Arc::new(Mutex::new(Vec::new()));
 
     for stream in server.incoming() {
@@ -42,7 +43,7 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
 
             let mut msgClone = msg.clone();
             let textMsg = msgClone.to_text().unwrap();
-            println!("{:?}", msgClone);
+            //println!("{:?}", msgClone);
             if(textMsg.starts_with("?")){
                 let subText = &textMsg[1..];
                 let mut guard = network_type_clone.write().unwrap();
@@ -59,13 +60,12 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
             };
             
             let mut node_clone = vec![];
-            let mut clean = false;
-            //let mut answer = vec![];
             for node in nodes {
                 node_clone.push(node.clone());
                 match node.get_building(){
                     Some(value) =>{
                         //println!("{:?}",value);
+                        //println!("Adding building at x: {}, y: {}, with type: {}", *node.get_x(), *node.get_y(), value);
                         let mut guard = buildings.write().unwrap();
                         guard.push(Building::new(*node.get_x(), *node.get_y(), value));
                     } 
@@ -75,15 +75,11 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                         remove_building(*node.get_x(), *node.get_y(), &mut copy);
                         guard.clear();
                         guard.extend(copy);
-                        clean = true;
+                    
                     } 
                 }
-
-                if clean{
-                    clean_board(&board_lock);
-                }
-                //let mut guard = board_lock.write().unwrap();
-                //guard[*node.get_x() as usize][*node.get_y() as usize] = node.get_node();
+          
+                clean_board(&board_lock);
             }
 
             
@@ -101,6 +97,11 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
             
             let mut guard = board_lock.write().unwrap();
             let answerVec = convert_board_to_dto(&mut guard);
+            //print buildings
+            let mut buildings_guard = buildings.write().unwrap();
+            //for x in buildings_guard.iter(){
+                //println!("{:?}",x);
+            //}
             let text = to_string(&answerVec).unwrap();
             //println!("Board = {:?}",board_lock);
             socket.write_message(Message::Text(text)).unwrap();
@@ -147,35 +148,57 @@ fn populate_board(board: &mut RwLockWriteGuard<Vec<Vec<Node>>>, nodes: Vec<NodeD
     }
 }
 
-// Takes in a node and adds all of its neighbours to the queue
-fn spread_signal(node: Node, board: &mut Vec<Vec<Node>>) {
-    let mut queue = NodeQueue::new_queue();
-    let mut neighbour_positions = node.adj_positions();
-    for position in neighbour_positions {
-        let x = position.0;
-        let y = position.1;
-        if x >= 0 && x < 100 && y >= 0 && y < 100 {
-            let x_usize = x as usize;
-            let y_usize = y as usize;
-            let signal_strength = 100;
-            let mut neighbour = board[x_usize][y_usize].clone();
-            let int = neighbour.set_input(signal_strength);
-            println!("{:?}", int);
-            queue.add(neighbour);
-        }
-    }
-    //println!("{:?}", queue);
-    while queue.size() > 0 {
-        let node = queue.pop_first();
-        match node {
-            Ok(value) => {
-                let x = value.clone();
-                board[*x.get_x() as usize][*x.get_y() as usize] = value;
+//Takes in a node and adds all of its neighbours to the queue
+fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>) {
+    let mut node_queue = NodeQueue::new_queue();
+    let mut signal_queue = Queue::<i32>::new();
+    let mut visited = HashSet::<Node>::new();
+
+    node.set_output(100);
+
+    node_queue.add(node.clone());
+    signal_queue.add(*node.get_output());
+    visited.insert(node.clone());
+
+    let mut iteration_count = 0;
+    while node_queue.size() > 0 && iteration_count < 100000 {
+        //if iteration_count >= 100000 {
+            //println!("Max iteration limit reached");
+        //}
+
+        if let Ok(current_node) = node_queue.pop_first() {
+            let current_signal = signal_queue.remove().unwrap();
+            let neighbour_positions = current_node.adj_positions();
+
+            for position in neighbour_positions {
+                let x = position.0;
+                let y = position.1;
+
+                if x >= 0 && x < 100 && y >= 0 && y < 100 {
+                    let x_usize = x as usize;
+                    let y_usize = y as usize;
+                    let mut neighbour = board[x_usize][y_usize].clone();
+
+                    if (current_signal > 0 && neighbour.get_output() < &current_signal) && (!visited.contains(&neighbour) || (neighbour.get_output() > &0)) {
+                        neighbour.set_input(current_signal);
+                        let output_signal = neighbour.get_output();
+
+                        if output_signal > &0 {
+                            visited.insert(neighbour.clone());
+                            node_queue.add(neighbour.clone());
+                            signal_queue.add(*output_signal);
+
+                            board[x_usize][y_usize] = neighbour;
+                        }
+                    }
+                }
             }
-            Err(_) => {}
+
+            iteration_count += 1;
         }
     }
 }
+
 
 fn remove_building(x: i32, y: i32, buildings: &mut Vec<Building>) {
     buildings.retain(|building| building.get_x() != &x || building.get_y() != &y);

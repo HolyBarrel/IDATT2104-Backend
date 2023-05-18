@@ -153,11 +153,11 @@ impl Node {
     pub fn set_weight(&mut self) -> &mut i32 {
         //Sets the weight of the node based on the landscape
         self.weight = match self.landscape.as_str() {
-            "mountain" => 9,
-            "forest" => 6,
-            "water" => 1,
-            "field" => 2,
-            "city" => 7,
+            "mountain" => 80, //TODO: Change to real data
+            "forest" => 25,
+            "water" => 8,
+            "field" => 12,
+            "city" => 38,
             _ => 0,
         };
         &mut self.weight
@@ -183,7 +183,15 @@ impl Node {
         if self.input < 2 {
             self.output = 0;
         } else {
-            self.output = self.input - (self.weight*10);
+            if (self.input - self.weight) > self.output {
+                self.output = self.input - self.weight;
+            } else {
+                self.output = 0;
+            }
+            //self.output = self.input - (self.weight);
+            if(self.output < 0){
+                self.output = 0;
+            }
         }
 
         &mut self.input
@@ -241,7 +249,7 @@ impl Node {
         
 }
 
-
+//Implements the PartialEq, Eq and Hash traits for the Node struct
 impl PartialEq for Node {
     fn eq(&self, other: &Self) -> bool {
         self.x == other.x && self.y == other.y
