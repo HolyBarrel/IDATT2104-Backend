@@ -50,3 +50,31 @@ impl Building {
 
 
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_building_new() {
+        let building = Building::new(10, 20, "House".to_string());
+
+        assert_eq!(building.get_x(), &10);
+        assert_eq!(building.get_y(), &20);
+        assert_eq!(building.get_type(), &"House".to_string());
+    }
+
+    #[test]
+    fn test_building_setters() {
+        let mut building = Building::new(10, 20, "House".to_string());
+
+        building.set_x(30);
+        assert_eq!(building.get_x(), &30);
+
+        building.set_y(40);
+        assert_eq!(building.get_y(), &40);
+
+        building.set_type("Office".to_string());
+        assert_eq!(building.get_type(), &"Office".to_string());
+    }
+}

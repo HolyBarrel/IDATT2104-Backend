@@ -36,3 +36,62 @@ impl NodeQueue {
     }
 
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::structures::node::Node;
+
+    #[test]
+    fn test_new_queue() {
+        let node_queue = NodeQueue::new_queue();
+
+        assert_eq!(node_queue.size(), 0);
+    }
+
+    #[test]
+    fn test_add() {
+        let mut node_queue = NodeQueue::new_queue();
+        let node = Node::new(1, 2);
+        node_queue.add(node.clone());
+
+        assert_eq!(node_queue.size(), 1);
+    }
+
+    #[test]
+    fn test_pop_first() {
+        let mut node_queue = NodeQueue::new_queue();
+        let node1 = Node::new(1, 2);
+        let node2 = Node::new(3, 4);
+        node_queue.add(node1.clone());
+        node_queue.add(node2.clone());
+
+        let popped_node = node_queue.pop_first().unwrap();
+
+        assert_eq!(popped_node, node1);
+        assert_eq!(node_queue.size(), 1);
+    }
+
+    #[test]
+    fn test_pop_first_empty_queue() {
+        let mut node_queue = NodeQueue::new_queue();
+
+        let result = node_queue.pop_first();
+
+        assert!(result.is_err());
+        assert_eq!(node_queue.size(), 0);
+    }
+
+    #[test]
+    fn test_size() {
+        let mut node_queue = NodeQueue::new_queue();
+        let node1 = Node::new(1, 2);
+        let node2 = Node::new(3, 4);
+        node_queue.add(node1.clone());
+        node_queue.add(node2.clone());
+
+        assert_eq!(node_queue.size(), 2);
+    }
+
+
+}

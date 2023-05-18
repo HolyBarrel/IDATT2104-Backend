@@ -2,7 +2,7 @@ use super::dto::answerDTO;
 use std::hash::{Hash, Hasher};
 
 //Defines the structure of a node in the graph
-#[derive(Clone,Debug)]
+#[derive(Clone,Debug,PartialEq, Eq)]
 pub struct Node {
     is_perimeter: bool,
     is_changed: bool,
@@ -265,3 +265,153 @@ impl Hash for Node {
     }
 }
 
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new() {
+        let node = Node::new(1, 2);
+
+        assert_eq!(node.is_perimeter(), &false);
+        assert_eq!(node.is_changed(), &false);
+        assert_eq!(node.get_x(), &1);
+        assert_eq!(node.get_y(), &2);
+        assert_eq!(node.get_weight(), &0);
+        assert_eq!(node.get_landscape(), &String::from("field"));
+        assert_eq!(node.get_building(), &String::from("none"));
+        assert_eq!(node.get_input(), &0);
+        assert_eq!(node.get_output(), &0);
+    }
+
+    #[test]
+    fn test_new_from_usize() {
+        let node = Node::new_from_usize(1, 2);
+
+        assert_eq!(node.is_perimeter(), &false);
+        assert_eq!(node.is_changed(), &false);
+        assert_eq!(node.get_x(), &1);
+        assert_eq!(node.get_y(), &2);
+        assert_eq!(node.get_weight(), &0);
+        assert_eq!(node.get_landscape(), &String::from("field"));
+        assert_eq!(node.get_building(), &String::from("none"));
+        assert_eq!(node.get_input(), &0);
+        assert_eq!(node.get_output(), &0);
+    }
+
+    #[test]
+    fn test_new_weighted() {
+        let node = Node::new_weighted(1, 2, 5);
+
+        assert_eq!(node.is_perimeter(), &false);
+        assert_eq!(node.is_changed(), &false);
+        assert_eq!(node.get_x(), &1);
+        assert_eq!(node.get_y(), &2);
+        assert_eq!(node.get_weight(), &5);
+        assert_eq!(node.get_landscape(), &String::from("field"));
+        assert_eq!(node.get_building(), &String::from("none"));
+        assert_eq!(node.get_input(), &0);
+        assert_eq!(node.get_output(), &0);
+    }
+
+    #[test]
+    fn test_convert_to_DTO() {
+        let node = Node::new_weighted(1, 2, 5);
+        let dto = node.convert_to_DTO();
+
+        assert_eq!(dto.x, 1);
+        assert_eq!(dto.y, 2);
+        assert_eq!(dto.power, 0.0);
+    }
+
+    #[test]
+    fn test_set_is_perimeter() {
+        let mut node = Node::new(1, 2);
+        *node.set_is_perimeter() = true;
+
+        assert_eq!(node.is_perimeter(), &true);
+    }
+
+    #[test]
+    fn test_set_is_changed() {
+        let mut node = Node::new(1, 2);
+        *node.set_is_changed() = true;
+
+        assert_eq!(node.is_changed(), &true);
+    }
+
+    #[test]
+    fn test_set_x() {
+        let mut node = Node::new(1, 2);
+        *node.set_x() = 3;
+
+        assert_eq!(node.get_x(), &3);
+    }
+
+    #[test]
+    fn test_set_y() {
+        let mut node = Node::new(1, 2);
+        *node.set_y() = 4;
+
+        assert_eq!(node.get_y(), &4);
+    }
+
+    #[test]
+    fn test_set_coor() {
+        let mut node = Node::new(1, 2);
+        *node.set_coor().0 = 3;
+        *node.set_coor().1 = 4;
+
+        assert_eq!(node.get_coor(), (&3, &4));
+    }
+
+    #[test]
+    fn test_set_weight() {
+        let mut node = Node::new(1, 2);
+        *node.set_weight() = 5;
+
+        assert_eq!(node.get_weight(), &5);
+    }
+
+    #[test]
+    fn test_set_landscape() {
+        let mut node = Node::new(1, 2);
+        node.set_landscape(String::from("mountain"));
+
+        assert_eq!(node.get_landscape(), &String::from("mountain"));
+    }
+
+    #[test]
+    fn test_set_building() {
+        let mut node = Node::new(1, 2);
+        node.set_building(String::from("house"));
+
+        assert_eq!(node.get_building(), &String::from("house"));
+    }
+
+    #[test]
+    fn test_set_input() {
+        let mut node = Node::new(1, 2);
+        *node.set_input(3) = 3;
+    
+        assert_eq!(node.get_input(), &3);
+        assert_eq!(node.get_output(), &3);  // Update the expected output value
+    }
+
+    #[test]
+    fn test_set_output() {
+        let mut node = Node::new(1, 2);
+        *node.set_output(4) = 4;
+
+        assert_eq!(node.get_output(), &4);
+    }
+
+    #[test]
+    fn test_adj_positions() {
+        let node = Node::new(1, 2);
+        let adj_positions = node.adj_positions();
+
+        assert_eq!(adj_positions, vec![(0, 2), (0, 1), (0, 3), (2, 2), (2, 1), (2, 3), (1, 1), (1, 3)]);
+    }
+}
