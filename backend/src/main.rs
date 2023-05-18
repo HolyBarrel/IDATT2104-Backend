@@ -72,12 +72,21 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                         
                     } 
                     None =>{
-                        let mut guard = antennas.write().unwrap();
-                        let mut copy = guard.clone();
-                        remove_building(*node.get_x(), *node.get_y(), &mut copy);
-                        guard.clear();
-                        guard.extend(copy);
-                    
+                        {
+                            let mut guard = antennas.write().unwrap();
+                            let mut copy = guard.clone();
+                            remove_building(*node.get_x(), *node.get_y(), &mut copy);
+                            guard.clear();
+                            guard.extend(copy);
+                        }
+                        
+                        {
+                            let mut guard = extenders.write().unwrap();
+                            let mut copy = guard.clone();
+                            remove_building(*node.get_x(), *node.get_y(), &mut copy);
+                            guard.clear();
+                            guard.extend(copy);
+                        }
                     } 
                 }
           
