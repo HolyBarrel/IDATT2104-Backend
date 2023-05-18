@@ -1,4 +1,5 @@
 use super::dto::answerDTO;
+use std::hash::{Hash, Hasher};
 
 //Defines the structure of a node in the graph
 #[derive(Clone,Debug)]
@@ -238,5 +239,21 @@ impl Node {
         positions
     }
         
+}
+
+
+impl PartialEq for Node {
+    fn eq(&self, other: &Self) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+}
+
+impl Eq for Node {}
+
+impl Hash for Node {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.x.hash(state);
+        self.y.hash(state);
+    }
 }
 

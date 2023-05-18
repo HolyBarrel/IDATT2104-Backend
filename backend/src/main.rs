@@ -14,7 +14,7 @@ use structures::building::Building;
 use std::sync::RwLockWriteGuard;
 
 fn main() {
-    let server = TcpListener::bind("10.24.6.143:8765").unwrap();
+    let server = TcpListener::bind("127.0.0.1:8765").unwrap();
     let connections = Arc::new(Mutex::new(Vec::new()));
 
     for stream in server.incoming() {
@@ -147,7 +147,7 @@ fn populate_board(board: &mut RwLockWriteGuard<Vec<Vec<Node>>>, nodes: Vec<NodeD
     }
 }
 
-// Takes in a node and adds all of its neighbors to the queue
+// Takes in a node and adds all of its neighbours to the queue
 fn spread_signal(node: Node, board: &mut Vec<Vec<Node>>) {
     let mut queue = NodeQueue::new_queue();
     let mut neighbour_positions = node.adj_positions();
