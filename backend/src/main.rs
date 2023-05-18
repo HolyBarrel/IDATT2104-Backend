@@ -97,6 +97,12 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
             
             let mut guard = board_lock.write().unwrap();
             let answerVec = convert_board_to_dto(&mut guard);
+            //write each node of the aswerVec to the socket
+            for x in answerVec.iter(){
+                let text = to_string(&x).unwrap();
+                socket.write_message(Message::Text(text)).unwrap();
+            }
+            /*
             //print buildings
             let mut buildings_guard = buildings.write().unwrap();
             //for x in buildings_guard.iter(){
@@ -105,6 +111,7 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
             let text = to_string(&answerVec).unwrap();
             //println!("Board = {:?}",board_lock);
             socket.write_message(Message::Text(text)).unwrap();
+            */
         }
     }
 }
