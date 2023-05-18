@@ -70,3 +70,47 @@ impl answerDTO {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_node_dto_getters() {
+        let node_dto = NodeDTO {
+            x: 10,
+            y: 20,
+            landscape: Some("Forest".to_string()),
+            building: Some("House".to_string()),
+        };
+
+        assert_eq!(node_dto.get_x(), &10);
+        assert_eq!(node_dto.get_y(), &20);
+        assert_eq!(node_dto.get_landscape(), Some("Forest".to_string()));
+        assert_eq!(node_dto.get_building(), Some("House".to_string()));
+    }
+
+    #[test]
+    fn test_node_dto_get_node() {
+        let node_dto = NodeDTO {
+            x: 10,
+            y: 20,
+            landscape: Some("Forest".to_string()),
+            building: Some("House".to_string()),
+        };
+
+        let node = node_dto.get_node();
+
+        assert_eq!(node.get_x(), &10);
+        assert_eq!(node.get_y(), &20);
+    }
+
+    #[test]
+    fn test_answer_dto_new() {
+        let answer_dto = answerDTO::new(10, 20);
+
+        assert_eq!(answer_dto.x, 10);
+        assert_eq!(answer_dto.y, 20);
+        assert_eq!(answer_dto.power, 30.0);
+    }
+}
