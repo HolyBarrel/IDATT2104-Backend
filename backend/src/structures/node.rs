@@ -203,6 +203,7 @@ impl Node {
     //Sets the output of the node
     pub fn set_output(&mut self, output: i32) -> &mut i32 {
         self.output = output;
+        
         &mut self.output
     }
 

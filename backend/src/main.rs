@@ -81,37 +81,19 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
           
                 clean_board(&board_lock);
             }
-
-            
-
             let queue = NodeQueue::new_queue();
             {
                 let mut guard = board_lock.write().unwrap();
                 populate_board(&mut guard, node_clone);
                 let building_guard = buildings.read().unwrap();
                 for x in building_guard.iter(){
-                    spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard);
+                    spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard, socket);
                 }
-                
+
+                //TODO: iterate thorugh buildings and spread signal from each building before spreading signal from the extenders
+                //TODO2: update all signals in the board, remember the ones outside the area changed
+
             }
-            
-            let mut guard = board_lock.write().unwrap();
-            let answerVec = convert_board_to_dto(&mut guard);
-            //write each node of the aswerVec to the socket
-            for x in answerVec.iter(){
-                let text = to_string(&x).unwrap();
-                socket.write_message(Message::Text(text)).unwrap();
-            }
-            /*
-            //print buildings
-            let mut buildings_guard = buildings.write().unwrap();
-            //for x in buildings_guard.iter(){
-                //println!("{:?}",x);
-            //}
-            let text = to_string(&answerVec).unwrap();
-            //println!("Board = {:?}",board_lock);
-            socket.write_message(Message::Text(text)).unwrap();
-            */
         }
     }
 }
@@ -149,17 +131,32 @@ fn populate_board(board: &mut RwLockWriteGuard<Vec<Vec<Node>>>, nodes: Vec<NodeD
         let building = node.get_building().unwrap_or("none".to_string());
         let mut node = Node::new_from_usize(x, y);
         node.set_landscape(landscape.to_string());
-        node.set_building(building.to_owned());
+        node.set_building(building.to_string());
         node.set_weight();
         board[x][y] = node;
     }
 }
 
 //Takes in a node and adds all of its neighbours to the queue
-fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>) {
+fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>, socket: &mut WebSocket<TcpStream>) {
     let mut node_queue = NodeQueue::new_queue();
     let mut signal_queue = Queue::<i32>::new();
     let mut visited = HashSet::<Node>::new();
+
+
+    print!("This is the building: {:?}", node.get_building());
+    /*
+    if node.get_building() == "tower" {
+        node.set_output(100);
+    }
+
+    else if node.get_building() == "extender" {
+        node.set_output(node.get_output() + 50);
+    }
+    */
+
+    //TODO: implement circular signal spreading
+    //TODO: 5g, 4g, 3g, 2g, 1g
 
     node.set_output(100);
 
@@ -170,6 +167,9 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>) {
 
     //Add the first node to the board
     board[*node.get_x() as usize][*node.get_y() as usize] = node.clone();
+    let dto = node.convert_to_DTO();
+    let temp = vec![dto];
+    socket.write_message(Message::Text(to_string(&temp).unwrap())).unwrap();
 
     node_queue.add(node.clone());
     signal_queue.add(*node.get_output());
@@ -193,6 +193,7 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>) {
                     let x_usize = x as usize;
                     let y_usize = y as usize;
                     let mut neighbour = board[x_usize][y_usize].clone();
+                    let mut clone_neighbour = neighbour.clone();
 
                     if (current_signal > 0 && neighbour.get_output() < &current_signal) && (!visited.contains(&neighbour) || (neighbour.get_output() > &0)) {
                         neighbour.set_input(current_signal, mountain_source);
@@ -204,9 +205,14 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>) {
                             signal_queue.add(*output_signal);
 
                             board[x_usize][y_usize] = neighbour;
+
                         }
                     }
+                    let dto = clone_neighbour.convert_to_DTO();
+                    let temp = vec![dto];
+                    socket.write_message(Message::Text(to_string(&temp).unwrap())).unwrap();
                 }
+
             }
 
             iteration_count += 1;
