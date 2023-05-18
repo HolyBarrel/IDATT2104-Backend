@@ -156,6 +156,14 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>) {
 
     node.set_output(100);
 
+    let mut mountain_source = false;
+    if(node.get_landscape() == "mountain"){
+        mountain_source = true;
+    }
+
+    //Add the first node to the board
+    board[*node.get_x() as usize][*node.get_y() as usize] = node.clone();
+
     node_queue.add(node.clone());
     signal_queue.add(*node.get_output());
     visited.insert(node.clone());
@@ -180,7 +188,7 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>) {
                     let mut neighbour = board[x_usize][y_usize].clone();
 
                     if (current_signal > 0 && neighbour.get_output() < &current_signal) && (!visited.contains(&neighbour) || (neighbour.get_output() > &0)) {
-                        neighbour.set_input(current_signal);
+                        neighbour.set_input(current_signal, mountain_source);
                         let output_signal = neighbour.get_output();
 
                         if output_signal > &0 {
@@ -208,7 +216,7 @@ fn clean_board(board: &Arc<RwLock<Vec<Vec<Node>>>>) {
     let mut guard = board.write().unwrap();
     for row in guard.iter_mut() {
         for column in row.iter_mut() {
-            column.set_input(0);
+            column.set_input(0, false);
         }
     }
 }

@@ -2,7 +2,7 @@ use super::dto::answerDTO;
 use std::hash::{Hash, Hasher};
 
 //Defines the structure of a node in the graph
-#[derive(Clone,Debug,PartialEq, Eq)]
+#[derive(Clone,Debug)]
 pub struct Node {
     is_perimeter: bool,
     is_changed: bool,
@@ -177,13 +177,16 @@ impl Node {
     }
 
     //Sets the input of the node
-    pub fn set_input(&mut self, input: i32) -> &mut i32 {
+    pub fn set_input(&mut self, input: i32, mountain_source: bool) -> &mut i32 {
         self.input = input;
         //Sets the output of the node based on the input and weight
         if self.input < 2 {
             self.output = 0;
         } else {
-            if (self.input - self.weight) > self.output {
+            if (mountain_source && self.landscape == "mountain") && ((self.input - self.weight/6) > self.output)  {
+                self.output = self.input - (self.weight / 6);
+            }
+            else if (self.input - self.weight) > self.output {
                 self.output = self.input - self.weight;
             } else {
                 self.output = 0;
@@ -393,7 +396,7 @@ mod tests {
     #[test]
     fn test_set_input() {
         let mut node = Node::new(1, 2);
-        *node.set_input(3) = 3;
+        *node.set_input(3, false) = 3;
     
         assert_eq!(node.get_input(), &3);
         assert_eq!(node.get_output(), &3);  // Update the expected output value
