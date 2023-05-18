@@ -27,12 +27,19 @@ fn main() {
         let socket_clone = socket.clone();
 
         thread::spawn(move || {
-            let mut socket = accept(stream).unwrap();
-            connections.lock().unwrap().push(socket.get_ref().peer_addr().unwrap());
-            handle_connection(socket_clone, connections.clone());
-            // Remove the connection from the list when the thread is finished
-            let mut connections = connections.lock().unwrap();
-            connections.retain(|c| *c != socket.get_ref().peer_addr().unwrap());
+            match accept(stream) {
+                Ok(mut socket) => {
+                    connections.lock().unwrap().push(socket.get_ref().peer_addr().unwrap());
+                    println!("Im here");
+                    handle_connection(socket_clone, connections.clone());
+                    // Remove the connection from the list when the thread is finished
+                    let mut connections = connections.lock().unwrap();
+                    connections.retain(|c| *c != socket.get_ref().peer_addr().unwrap());
+                },
+                Err(err) => {
+                    eprintln!("Error accepting connection: {:?}", err);
+                }
+            }
         });
     }
 }
@@ -56,6 +63,7 @@ fn handle_connection(socket: Arc<Mutex<WebSocket<TcpStream>>>, connections: Arc<
                 let sub_text = &text_msg[1..];
                 let mut guard = network_type_clone.write().unwrap();
                 *guard = sub_text.to_string();
+                continue; // Skip the rest of the message handling for this iteration
             }
 
             let nodes = match parse_json(msg) {
