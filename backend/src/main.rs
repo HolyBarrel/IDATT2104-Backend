@@ -1,5 +1,5 @@
 use std::thread;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex, RwLock, RwLockReadGuard};
 use serde::de::Error;
 use serde_json::{Result, Value, from_str, to_string};
 use tungstenite::{WebSocket, Message, accept};
@@ -15,7 +15,7 @@ use std::sync::RwLockWriteGuard;
 use queues::*;
 
 fn main() {
-    let server = TcpListener::bind("10.22.6.113:8765").unwrap();
+    let server = TcpListener::bind("127.0.0.1:8765").unwrap();
     let connections = Arc::new(Mutex::new(Vec::new()));
 
     for stream in server.incoming() {
@@ -35,7 +35,9 @@ fn main() {
 fn handle_connection(socket: &mut WebSocket<TcpStream>) {
     let network_type = Arc::new(RwLock::new("5G".to_string()));
     let vec_buildings:Vec<Building> = vec![];
-    let buildings = Arc::new(RwLock::new(vec_buildings));
+    let vec_copy :Vec<Building>= vec![];
+    let antennas = Arc::new(RwLock::new(vec_buildings));
+    let extenders = Arc::new(RwLock::new(vec_copy));
     let board_lock = Arc::new(RwLock::new(vec![vec![Node::new(-1, -1);100];100]));
     while let Ok(msg) = socket.read_message() {
         let network_type_clone= network_type.clone();
@@ -64,13 +66,17 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 node_clone.push(node.clone());
                 match node.get_building(){
                     Some(value) =>{
-                        //println!("{:?}",value);
-                        //println!("Adding building at x: {}, y: {}, with type: {}", *node.get_x(), *node.get_y(), value);
-                        let mut guard = buildings.write().unwrap();
-                        guard.push(Building::new(*node.get_x(), *node.get_y(), value));
+                        if value.eq_ignore_ascii_case("tower") {
+                            let mut guard = antennas.write().unwrap();
+                            guard.push(Building::new(*node.get_x(), *node.get_y(), value));
+                        }else {
+                            let mut guard = extenders.write().unwrap();
+                            guard.push(Building::new(*node.get_x(), *node.get_y(), value));
+                        }
+
                     } 
                     None =>{
-                        let mut guard = buildings.write().unwrap();
+                        let mut guard = antennas.write().unwrap();
                         let mut copy = guard.clone();
                         remove_building(*node.get_x(), *node.get_y(), &mut copy);
                         guard.clear();
@@ -78,14 +84,21 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                     
                     } 
                 }
-          
-                clean_board(&board_lock);
             }
+            
+            clean_board(&board_lock);
+            let mut guard = board_lock.read().unwrap();
+            let mut answerVec = convert_board_to_dto(&mut guard);
+            socket.write_message(Message::Text(to_string(&mut answerVec).unwrap())).unwrap();
             let queue = NodeQueue::new_queue();
             {
                 let mut guard = board_lock.write().unwrap();
                 populate_board(&mut guard, node_clone);
-                let building_guard = buildings.read().unwrap();
+                let building_guard = antennas.read().unwrap();
+                for x in building_guard.iter(){
+                    spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard, socket);
+                }
+                let building_guard: RwLockReadGuard<Vec<Building>> = extenders.read().unwrap();
                 for x in building_guard.iter(){
                     spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard, socket);
                 }
@@ -110,7 +123,7 @@ fn parse_json(msg: Message) -> Result<Vec<NodeDTO>> {
     }
 }
 
-fn convert_board_to_dto(board: &mut RwLockWriteGuard<Vec<Vec<Node>>>) -> Vec<answerDTO> {
+fn convert_board_to_dto(board: &mut RwLockReadGuard<Vec<Vec<Node>>>) -> Vec<answerDTO> {
     let mut nodes_dto = Vec::new();
 
     for row in board.iter() {
