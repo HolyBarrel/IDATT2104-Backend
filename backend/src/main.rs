@@ -15,7 +15,7 @@ use std::sync::RwLockWriteGuard;
 use queues::*;
 
 fn main() {
-    let server = TcpListener::bind("10.22.37.119:8765").unwrap();
+    let server = TcpListener::bind("10.24.21.220:8765").unwrap();
     let connections = Arc::new(Mutex::new(Vec::new()));
 
     for stream in server.incoming() {
@@ -51,7 +51,6 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 let sub_text = &text_msg[1..];
                 let mut guard = network_type_clone.write().unwrap();
                 *guard = sub_text.to_string();
-                //print!("Network type is now {:?}", *guard);
             }
             let nodes = match parse_json(msg) {
                 Ok(nodes) => nodes,
@@ -66,7 +65,6 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 node_clone.push(node.clone());
                 match node.get_building(){
                     Some(value) =>{
-                        //println!("Is a building = {:?}",value);
                         if value.starts_with("to") {
                             let mut guard = antennas.write().unwrap();
                             guard.push(Building::new(*node.get_x(), *node.get_y(), value));
@@ -80,7 +78,6 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                         let mut extender_gurd = extenders.write().unwrap();
                         let mut copy = guard.clone();
                         let mut extendet_copy = extender_gurd.clone();
-                        //println!("Try to delete from a list of buildings");
                         remove_building(*node.get_x(), *node.get_y(), &mut copy);
                         remove_building(*node.get_x(), *node.get_y(), &mut extender_gurd);
                         guard.clear();
@@ -111,7 +108,6 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 clean_board(&board_lock, guard_network_clone.to_string());
                 let mut guard = board_lock.write().unwrap();
                 let mut answer = convert_board_to_dto(&mut guard);
-                //println!("{:?}",answer);
                 socket.write_message(Message::Text((to_string(&mut answer).unwrap()))).unwrap();}
         
             
@@ -128,11 +124,31 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 for x in building_guard.iter(){
                     spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard, socket, read_guard_network_clone.to_string());
                 }
-                let building_guard: RwLockReadGuard<Vec<Building>> = extenders.read().unwrap();
-                for x in building_guard.iter(){
-                    //print!("Placed extender at: {} {}",x.get_x(),x.get_y());
+
+                let mut building_guard: RwLockWriteGuard<Vec<Building>> = extenders.write().unwrap();
+                let mut new_extenders= vec![];
+                while !building_guard.is_empty() {
+                    let copy_guard = guard.clone();
+                    let mut sort_nodes = vec![];
+                    let mut building_clone = building_guard.clone();
+                    for building in building_clone.into_iter(){
+                        let tem = guard[*building.get_x() as usize][*building.get_y() as usize].clone();
+                        sort_nodes.push(tem)
+                    }
+                    sort_nodes.sort();
+                    building_guard.clear();
+                    for node in sort_nodes{
+                        building_guard.push(Building::new(*node.get_x(), *node.get_y(), "extender".to_string()))
+                    }
+                    let mut x = building_guard.pop().unwrap();
                     spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard, socket, read_guard_network_clone.to_string());
+                    new_extenders.push(x)
+
                 }
+                for new in new_extenders{
+                    building_guard.push(new);
+                }
+                
             }
         }
     }
@@ -190,8 +206,6 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>, socket: &mut WebSoc
         _ => 0.9,
     };
 
-
-    //print!("This is the building: {:?}", node.get_building());
     
     if node.get_building() == "tower" {
         node.set_output(100);
@@ -289,3 +303,4 @@ fn clean_board(board: &Arc<RwLock<Vec<Vec<Node>>>>, network_type: String) {
         }
     }
 }
+
