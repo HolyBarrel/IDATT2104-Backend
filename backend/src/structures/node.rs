@@ -1,5 +1,5 @@
 use super::dto::answerDTO;
-use std::hash::{Hash, Hasher};
+use std::{hash::{Hash, Hasher}, cmp::Ordering};
 
 //Defines the structure of a node in the graph
 #[derive(Clone,Debug)]
@@ -14,6 +14,19 @@ pub struct Node {
     input: i32,
     output: i32,
 }
+
+impl Ord for Node {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.weight.cmp(&other.weight)
+    }
+}
+
+impl PartialOrd for Node {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 
 //Implementation of the node structure
 impl Node {
