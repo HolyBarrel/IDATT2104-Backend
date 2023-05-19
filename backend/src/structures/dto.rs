@@ -54,7 +54,7 @@ impl NodeDTO{
     }
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Debug)]
 pub struct  answerDTO{
     pub x:i32,
     pub y:i32,

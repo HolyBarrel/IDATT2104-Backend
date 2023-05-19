@@ -15,7 +15,7 @@ use std::sync::RwLockWriteGuard;
 use queues::*;
 
 fn main() {
-    let server = TcpListener::bind("127.0.0.1:8765").unwrap();
+    let server = TcpListener::bind("10.24.6.143:8765").unwrap();
     let connections = Arc::new(Mutex::new(Vec::new()));
 
     for stream in server.incoming() {
@@ -41,11 +41,12 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
     let board_lock = Arc::new(RwLock::new(vec![vec![Node::new(-1, -1);100];100]));
     while let Ok(msg) = socket.read_message() {
         let network_type_clone= network_type.clone();
+
         if msg.is_binary() || msg.is_text() {
 
             let mut msgClone = msg.clone();
             let textMsg = msgClone.to_text().unwrap();
-            //println!("{:?}", msgClone);
+            println!("{:?}",msgClone);
             if(textMsg.starts_with("?")){
                 let subText = &textMsg[1..];
                 let mut guard = network_type_clone.write().unwrap();
@@ -60,13 +61,15 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                     continue;
                 }
             };
+
             
             let mut node_clone = vec![];
             for node in nodes {
                 node_clone.push(node.clone());
                 match node.get_building(){
                     Some(value) =>{
-                        if value.eq_ignore_ascii_case("tower") {
+                        println!("Is a building = {:?}",value);
+                        if value.starts_with("tower") {
                             let mut guard = antennas.write().unwrap();
                             guard.push(Building::new(*node.get_x(), *node.get_y(), value));
                         }else {
@@ -77,23 +80,46 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                     } 
                     None =>{
                         let mut guard = antennas.write().unwrap();
+                        let mut extender_gurd = extenders.write().unwrap();
                         let mut copy = guard.clone();
+                        let mut extendet_copy = extender_gurd.clone();
+                        println!("Try to delete from a list of buildings");
                         remove_building(*node.get_x(), *node.get_y(), &mut copy);
+                        remove_building(*node.get_x(), *node.get_y(), &mut extender_gurd);
                         guard.clear();
                         guard.extend(copy);
+                        extender_gurd.clear();
+                        extender_gurd.extend(extendet_copy);
                     
                     } 
                 }
+                let x = *node.get_x() as usize;
+                let y = *node.get_y() as usize;
+                let landscape = node.get_landscape().unwrap_or("field".to_string());
+                let building = node.get_building().unwrap_or("none".to_string());
+                let mut node = Node::new_from_usize(x, y);
+                node.set_landscape(landscape.to_string());
+                node.set_building(building.to_string());
+                node.set_weight();
+                let mut guard = board_lock.write().unwrap();
+                guard[x][y] = node;
+
             }
+
+
+                //populate_board(&mut guard, node_clone);
+                {clean_board(&board_lock);
+                let mut guard = board_lock.write().unwrap();
+                let mut answer = convert_board_to_dto(&mut guard);
+                println!("{:?}",answer);
+                socket.write_message(Message::Text((to_string(&mut answer).unwrap()))).unwrap();}
+        
             
-            clean_board(&board_lock);
-            let mut guard = board_lock.read().unwrap();
-            let mut answerVec = convert_board_to_dto(&mut guard);
-            socket.write_message(Message::Text(to_string(&mut answerVec).unwrap())).unwrap();
+            
+
             let queue = NodeQueue::new_queue();
             {
                 let mut guard = board_lock.write().unwrap();
-                populate_board(&mut guard, node_clone);
                 let building_guard = antennas.read().unwrap();
                 for x in building_guard.iter(){
                     spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard, socket);
@@ -123,7 +149,7 @@ fn parse_json(msg: Message) -> Result<Vec<NodeDTO>> {
     }
 }
 
-fn convert_board_to_dto(board: &mut RwLockReadGuard<Vec<Vec<Node>>>) -> Vec<answerDTO> {
+fn convert_board_to_dto(board: &mut RwLockWriteGuard<Vec<Vec<Node>>>) -> Vec<answerDTO> {
     let mut nodes_dto = Vec::new();
 
     for row in board.iter() {
