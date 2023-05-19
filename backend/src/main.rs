@@ -44,18 +44,18 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
 
         if msg.is_binary() || msg.is_text() {
 
-            let mut msgClone = msg.clone();
-            let textMsg = msgClone.to_text().unwrap();
-            println!("{:?}",msgClone);
-            if(textMsg.starts_with("?")){
-                let subText = &textMsg[1..];
+            let msg_clone = msg.clone();
+            let text_msg = msg_clone.to_text().unwrap();
+           
+            if text_msg.starts_with("?") {
+                let sub_text = &text_msg[1..];
                 let mut guard = network_type_clone.write().unwrap();
-                *guard = subText.to_string();
+                *guard = sub_text.to_string();
             }
 
 
 
-            let mut nodes = match parse_json(msg) {
+            let nodes = match parse_json(msg) {
                 Ok(nodes) => nodes,
                 Err(e) => {
                     continue;
@@ -68,15 +68,14 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 node_clone.push(node.clone());
                 match node.get_building(){
                     Some(value) =>{
-                        println!("Is a building = {:?}",value);
-                        if value.starts_with("tower") {
+                        //println!("Is a building = {:?}",value);
+                        if value.starts_with("to") {
                             let mut guard = antennas.write().unwrap();
                             guard.push(Building::new(*node.get_x(), *node.get_y(), value));
-                        }else {
+                        }else if value.starts_with("ex"){
                             let mut guard = extenders.write().unwrap();
                             guard.push(Building::new(*node.get_x(), *node.get_y(), value));
                         }
-
                     } 
                     None =>{
                         let mut guard = antennas.write().unwrap();
@@ -126,12 +125,10 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 }
                 let building_guard: RwLockReadGuard<Vec<Building>> = extenders.read().unwrap();
                 for x in building_guard.iter(){
+                    print!("Placed extender at: {} {}",x.get_x(),x.get_y());
                     spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard, socket);
                 }
-
-                //TODO: iterate thorugh buildings and spread signal from each building before spreading signal from the extenders
-                //TODO2: update all signals in the board, remember the ones outside the area changed
-
+                //TODO: implement while looop
             }
         }
     }
@@ -183,7 +180,7 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>, socket: &mut WebSoc
     let mut visited = HashSet::<Node>::new();
 
 
-    print!("This is the building: {:?}", node.get_building());
+    //print!("This is the building: {:?}", node.get_building());
     
     if node.get_building() == "tower" {
         node.set_output(100);
