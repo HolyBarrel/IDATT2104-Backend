@@ -15,7 +15,7 @@ use std::sync::RwLockWriteGuard;
 use queues::*;
 
 fn main() {
-    let server = TcpListener::bind("10.24.6.143:8765").unwrap();
+    let server = TcpListener::bind("10.22.6.113:8765").unwrap();
     let connections = Arc::new(Mutex::new(Vec::new()));
 
     for stream in server.incoming() {
@@ -83,7 +83,7 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                         let mut extender_gurd = extenders.write().unwrap();
                         let mut copy = guard.clone();
                         let mut extendet_copy = extender_gurd.clone();
-                        println!("Try to delete from a list of buildings");
+                        //println!("Try to delete from a list of buildings");
                         remove_building(*node.get_x(), *node.get_y(), &mut copy);
                         remove_building(*node.get_x(), *node.get_y(), &mut extender_gurd);
                         guard.clear();
@@ -111,7 +111,7 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 {clean_board(&board_lock);
                 let mut guard = board_lock.write().unwrap();
                 let mut answer = convert_board_to_dto(&mut guard);
-                println!("{:?}",answer);
+                //println!("{:?}",answer);
                 socket.write_message(Message::Text((to_string(&mut answer).unwrap()))).unwrap();}
         
             
@@ -234,14 +234,24 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>, socket: &mut WebSoc
                     let mut neighbour = board[x_usize][y_usize].clone();
                     let mut clone_neighbour = neighbour.clone();
 
+                    
                     if (current_signal > 0 && neighbour.get_output() < &current_signal) && (!visited.contains(&neighbour) || (neighbour.get_output() > &0)) {
+                        let is_diagonal = !(neighbour.get_x() == node.get_x() || neighbour.get_y() == node.get_y());
                         neighbour.set_input(current_signal, mountain_source);
-                        let output_signal = neighbour.get_output();
+                        
+                        let mut output_signal = 0;
+                        if is_diagonal {
+                            output_signal = (*neighbour.get_output() as f32 * 0.90 as f32) as i32;
+                        }
+                        else {
+                            output_signal = *neighbour.get_output();
+                        }
+                        
 
-                        if output_signal > &0 {
+                        if output_signal > 0 {
                             visited.insert(neighbour.clone());
                             node_queue.add(neighbour.clone());
-                            signal_queue.add(*output_signal);
+                            signal_queue.add(output_signal);
 
                             board[x_usize][y_usize] = neighbour;
 
@@ -258,6 +268,7 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>, socket: &mut WebSoc
         }
     }
 }
+
 
 
 fn remove_building(x: i32, y: i32, buildings: &mut Vec<Building>) {

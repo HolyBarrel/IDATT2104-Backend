@@ -154,7 +154,7 @@ impl Node {
         //Sets the weight of the node based on the landscape
         self.weight = match self.landscape.as_str() {
             "mountain" => 80, //TODO: Change to real data
-            "forest" => 25,
+            "forest" => 24,
             "water" => 8,
             "field" => 12,
             "city" => 38,
