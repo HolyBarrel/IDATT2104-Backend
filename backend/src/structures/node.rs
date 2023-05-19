@@ -153,11 +153,11 @@ impl Node {
     pub fn set_weight(&mut self) -> &mut i32 {
         //Sets the weight of the node based on the landscape
         self.weight = match self.landscape.as_str() {
-            "mountain" => 75, //TODO: Change to real data
-            "forest" => 20,
+            "mountain" => 80, //TODO: Change to real data
+            "forest" => 24,
             "water" => 8,
             "field" => 12,
-            "city" => 25,
+            "city" => 26,
             _ => 0,
         };
         &mut self.weight
