@@ -1,11 +1,9 @@
-use super::dto::answerDTO;
+use super::dto::AnswerDTO;
 use std::{hash::{Hash, Hasher}, cmp::Ordering};
 
 //Defines the structure of a node in the graph
 #[derive(Clone,Debug)]
 pub struct Node {
-    is_perimeter: bool,
-    is_changed: bool,
     x: i32,
     y: i32,
     weight: i32,
@@ -34,8 +32,6 @@ impl Node {
     //Creates a new node
     pub fn new(x: i32, y: i32) -> Node {
         Node {
-            is_perimeter: false,
-            is_changed: false,
             x,
             y,
             weight: 0,
@@ -50,8 +46,6 @@ impl Node {
         //Creates a new node from usizes
         pub fn new_from_usize(x: usize, y: usize) -> Node {
             Node {
-                is_perimeter: false,
-                is_changed: false,
                 x: x as i32,
                 y: y as i32,
                 weight: 0,
@@ -64,38 +58,15 @@ impl Node {
         }
     
 
-    //Creates a new node with a weight
-    pub fn new_weighted(x: i32, y: i32, weight: i32) -> Node {
-        Node {
-            is_perimeter: false,
-            is_changed: false,
-            x,
-            y,
-            weight,
-            landscape: String::from("field"),
-            building: String::from("none"),
-            input: 0,
-            output: 0,
-        }
-    }
 
-    pub fn convert_to_DTO(&self) -> answerDTO{
-        answerDTO{
+    pub fn convert_to_dto(&self) -> AnswerDTO{
+        AnswerDTO{
             x: self.x,
             y: self.y,
             power: self.output as f32
         }
     }
 
-    //Returns true if the node is on the perimeter
-    pub fn is_perimeter(&self) -> &bool {
-        &self.is_perimeter
-    }
-
-    //Returns true if the node has been changed
-    pub fn is_changed(&self) -> &bool {
-        &self.is_changed
-    }
 
     //Returns the x coordinate of the node
     pub fn get_x(&self) -> &i32 {
@@ -105,16 +76,6 @@ impl Node {
     //Returns the y coordinate of the node
     pub fn get_y(&self) -> &i32 {
         &self.y
-    }
-
-    //Returns the coordinate of the node
-    pub fn get_coor(&self) -> (&i32, &i32) {
-        (&self.x, &self.y)
-    }
-
-    //Returns the weight of the node
-    pub fn get_weight(&self) -> &i32 {
-        &self.weight
     }
 
     //Returns the landscape of the node
@@ -127,39 +88,9 @@ impl Node {
         &self.building
     }
 
-    // Returns the input to the node
-    pub fn get_input(&self) -> &i32 {
-        &self.input
-    }
-
     //Returns the output from the node
     pub fn get_output(&self) -> &i32 {
         &self.output
-    }
-
-    //Mutable access to the perimeter status of the node
-    pub fn set_is_perimeter(&mut self) -> &mut bool {
-        &mut self.is_perimeter
-    }
-
-    //Mutable access to the changed status of the node
-    pub fn set_is_changed(&mut self) -> &mut bool {
-        &mut self.is_changed
-    }
-
-    //Mutable access to the x coordinate of the node
-    pub fn set_x(&mut self) -> &mut i32 {
-        &mut self.x
-    }
-
-    //Mutable access to the y coordinate of the node
-    pub fn set_y(&mut self) -> &mut i32 {
-        &mut self.y
-    }
-
-    //Mutable access to the coordinate of the node
-    pub fn set_coor(&mut self) -> (&mut i32, &mut i32) {
-        (&mut self.x, &mut self.y)
     }
 
     //Mutable access to the weight of the node
@@ -326,14 +257,10 @@ mod tests {
     fn test_new() {
         let node = Node::new(1, 2);
 
-        assert_eq!(node.is_perimeter(), &false);
-        assert_eq!(node.is_changed(), &false);
         assert_eq!(node.get_x(), &1);
         assert_eq!(node.get_y(), &2);
-        assert_eq!(node.get_weight(), &0);
         assert_eq!(node.get_landscape(), &String::from("field"));
         assert_eq!(node.get_building(), &String::from("none"));
-        assert_eq!(node.get_input(), &0);
         assert_eq!(node.get_output(), &0);
     }
 
@@ -341,90 +268,16 @@ mod tests {
     fn test_new_from_usize() {
         let node = Node::new_from_usize(1, 2);
 
-        assert_eq!(node.is_perimeter(), &false);
-        assert_eq!(node.is_changed(), &false);
         assert_eq!(node.get_x(), &1);
         assert_eq!(node.get_y(), &2);
-        assert_eq!(node.get_weight(), &0);
         assert_eq!(node.get_landscape(), &String::from("field"));
         assert_eq!(node.get_building(), &String::from("none"));
-        assert_eq!(node.get_input(), &0);
         assert_eq!(node.get_output(), &0);
     }
 
-    #[test]
-    fn test_new_weighted() {
-        let node = Node::new_weighted(1, 2, 5);
 
-        assert_eq!(node.is_perimeter(), &false);
-        assert_eq!(node.is_changed(), &false);
-        assert_eq!(node.get_x(), &1);
-        assert_eq!(node.get_y(), &2);
-        assert_eq!(node.get_weight(), &5);
-        assert_eq!(node.get_landscape(), &String::from("field"));
-        assert_eq!(node.get_building(), &String::from("none"));
-        assert_eq!(node.get_input(), &0);
-        assert_eq!(node.get_output(), &0);
-    }
 
-    #[test]
-    fn test_convert_to_DTO() {
-        let node = Node::new_weighted(1, 2, 5);
-        let dto = node.convert_to_DTO();
-
-        assert_eq!(dto.x, 1);
-        assert_eq!(dto.y, 2);
-        assert_eq!(dto.power, 0.0);
-    }
-
-    #[test]
-    fn test_set_is_perimeter() {
-        let mut node = Node::new(1, 2);
-        *node.set_is_perimeter() = true;
-
-        assert_eq!(node.is_perimeter(), &true);
-    }
-
-    #[test]
-    fn test_set_is_changed() {
-        let mut node = Node::new(1, 2);
-        *node.set_is_changed() = true;
-
-        assert_eq!(node.is_changed(), &true);
-    }
-
-    #[test]
-    fn test_set_x() {
-        let mut node = Node::new(1, 2);
-        *node.set_x() = 3;
-
-        assert_eq!(node.get_x(), &3);
-    }
-
-    #[test]
-    fn test_set_y() {
-        let mut node = Node::new(1, 2);
-        *node.set_y() = 4;
-
-        assert_eq!(node.get_y(), &4);
-    }
-
-    #[test]
-    fn test_set_coor() {
-        let mut node = Node::new(1, 2);
-        *node.set_coor().0 = 3;
-        *node.set_coor().1 = 4;
-
-        assert_eq!(node.get_coor(), (&3, &4));
-    }
-
-    #[test]
-    fn test_set_weight() {
-        let mut node = Node::new(1, 2);
-        *node.set_weight() = 5;
-
-        assert_eq!(node.get_weight(), &5);
-    }
+    
 
     #[test]
     fn test_set_landscape() {
@@ -442,16 +295,6 @@ mod tests {
         assert_eq!(node.get_building(), &String::from("house"));
     }
 
-    #[test]
-    /* TODO: UPDATE
-    fn test_set_input() {
-        let mut node = Node::new(1, 2);
-        *node.set_input(3, false) = 3;
-    
-        assert_eq!(node.get_input(), &3);
-        assert_eq!(node.get_output(), &3);  // Update the expected output value
-    }
-    */
 
     #[test]
     fn test_set_output() {

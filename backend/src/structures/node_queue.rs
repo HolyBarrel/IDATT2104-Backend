@@ -17,7 +17,7 @@ impl NodeQueue {
 
     //Adds a node to the queue
     pub fn add(&mut self, node: Node) {
-        self.queue.add(node);
+        self.queue.add(node).unwrap();
     }
 
     // Removes a node from the front of the queue and returns it
@@ -30,10 +30,6 @@ impl NodeQueue {
         self.queue.size()
     }
 
-    //Returns the queue
-    pub fn get_queue(&self) -> &Queue::<Node> {
-        &self.queue
-    }
 
 }
 
