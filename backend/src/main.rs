@@ -1,7 +1,7 @@
 use std::thread;
-use std::sync::{Arc, Mutex, RwLock, RwLockReadGuard};
+use std::sync::{Arc, Mutex, RwLock};
 use serde::de::Error;
-use serde_json::{Result, Value, from_str, to_string};
+use serde_json::{Result, from_str, to_string};
 use tungstenite::{WebSocket, Message, accept};
 use std::net::{TcpListener,TcpStream};
 mod structures;
@@ -9,7 +9,7 @@ use structures::dto::NodeDTO;
 use structures::node::Node;
 use structures::node_queue::NodeQueue;
 use std::collections::HashSet;
-use structures::dto::answerDTO;
+use structures::dto::AnswerDTO;
 use structures::building::Building;
 use std::sync::RwLockWriteGuard;
 use queues::*;
@@ -54,7 +54,7 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
             }
             let nodes = match parse_json(msg) {
                 Ok(nodes) => nodes,
-                Err(e) => {
+                Err(_e) => {
                     continue;
                 }
             };
@@ -77,7 +77,7 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                         let mut guard = antennas.write().unwrap();
                         let mut extender_gurd = extenders.write().unwrap();
                         let mut copy = guard.clone();
-                        let mut extendet_copy = extender_gurd.clone();
+                        let extendet_copy = extender_gurd.clone();
                         remove_building(*node.get_x(), *node.get_y(), &mut copy);
                         remove_building(*node.get_x(), *node.get_y(), &mut extender_gurd);
                         guard.clear();
@@ -108,12 +108,7 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 clean_board(&board_lock, guard_network_clone.to_string());
                 let mut guard = board_lock.write().unwrap();
                 let mut answer = convert_board_to_dto(&mut guard);
-                socket.write_message(Message::Text((to_string(&mut answer).unwrap()))).unwrap();}
-        
-            
-            
-
-            let queue = NodeQueue::new_queue();
+                socket.write_message(Message::Text(to_string(&mut answer).unwrap())).unwrap();}
             {   
                 let read_guard_network = network_type.read().unwrap();
                 let read_guard_network_clone = read_guard_network.clone();
@@ -128,9 +123,8 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                 let mut building_guard: RwLockWriteGuard<Vec<Building>> = extenders.write().unwrap();
                 let mut new_extenders= vec![];
                 while !building_guard.is_empty() {
-                    let copy_guard = guard.clone();
                     let mut sort_nodes = vec![];
-                    let mut building_clone = building_guard.clone();
+                    let building_clone = building_guard.clone();
                     for building in building_clone.into_iter(){
                         let tem = guard[*building.get_x() as usize][*building.get_y() as usize].clone();
                         sort_nodes.push(tem)
@@ -140,7 +134,7 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                     for node in sort_nodes{
                         building_guard.push(Building::new(*node.get_x(), *node.get_y(), "extender".to_string()))
                     }
-                    let mut x = building_guard.pop().unwrap();
+                    let x = building_guard.pop().unwrap();
                     spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard, socket, read_guard_network_clone.to_string());
                     new_extenders.push(x)
 
@@ -166,34 +160,19 @@ fn parse_json(msg: Message) -> Result<Vec<NodeDTO>> {
     }
 }
 
-fn convert_board_to_dto(board: &mut RwLockWriteGuard<Vec<Vec<Node>>>) -> Vec<answerDTO> {
+fn convert_board_to_dto(board: &mut RwLockWriteGuard<Vec<Vec<Node>>>) -> Vec<AnswerDTO> {
     let mut nodes_dto = Vec::new();
 
     for row in board.iter() {
         for node in row.iter() {
-            let answerDTO = node.convert_to_DTO();
-            nodes_dto.push(answerDTO);
+            let answer_dto = node.convert_to_dto();
+            nodes_dto.push(answer_dto);
         }
     }
 
     nodes_dto
 }
 
-fn populate_board(board: &mut RwLockWriteGuard<Vec<Vec<Node>>>, nodes: Vec<NodeDTO>) {
-    for node in nodes {
-        let x = *node.get_x() as usize;
-        let y = *node.get_y() as usize;
-        let landscape = node.get_landscape().unwrap_or("field".to_string());
-        let building = node.get_building().unwrap_or("none".to_string());
-        let mut node = Node::new_from_usize(x, y);
-        node.set_landscape(landscape.to_string());
-        node.set_building(building.to_string());
-        node.set_weight();
-        board[x][y] = node;
-    }
-}
-
-//Takes in a node and adds all of its neighbours to the queue
 fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>, socket: &mut WebSocket<TcpStream>, network_type: String) {
 
     let mut node_queue = NodeQueue::new_queue();
@@ -228,12 +207,12 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>, socket: &mut WebSoc
 
     //Add the first node to the board
     board[*node.get_x() as usize][*node.get_y() as usize] = node.clone();
-    let dto = node.convert_to_DTO();
+    let dto = node.convert_to_dto();
     let temp = vec![dto];
     socket.write_message(Message::Text(to_string(&temp).unwrap())).unwrap();
 
     node_queue.add(node.clone());
-    signal_queue.add(*node.get_output());
+    signal_queue.add(*node.get_output()).unwrap();
     visited.insert((node.get_x().clone(), node.get_y().clone()));
 
     let mut iteration_count = 0;
@@ -251,14 +230,14 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>, socket: &mut WebSoc
                     let x_usize = x as usize;
                     let y_usize = y as usize;
                     let mut neighbour = board[x_usize][y_usize].clone();
-                    let mut clone_neighbour = neighbour.clone();
+                    let clone_neighbour = neighbour.clone();
 
                     
                     if (current_signal > 0 && neighbour.get_output() < &current_signal) && (!visited.contains(&(*neighbour.get_x(), *neighbour.get_y())) || (neighbour.get_output() > &0)) {
                         let is_diagonal = !(neighbour.get_x() == node.get_x() || neighbour.get_y() == node.get_y());
                         neighbour.set_input(current_signal, mountain_source, network_type.clone());
                         
-                        let mut output_signal = 0;
+                        let output_signal ;
 
                         if is_diagonal {
                             output_signal = (*neighbour.get_output() as f32 * network_modifier as f32) as i32;
@@ -271,13 +250,13 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>, socket: &mut WebSoc
                         if output_signal > 0 {
                             visited.insert((neighbour.get_x().clone(), neighbour.get_y().clone()));
                             node_queue.add(neighbour.clone());
-                            signal_queue.add(output_signal);
+                            signal_queue.add(output_signal).unwrap();
 
                             board[x_usize][y_usize] = neighbour;
 
                         }
                     }
-                    let dto = clone_neighbour.convert_to_DTO();
+                    let dto = clone_neighbour.convert_to_dto();
                     let temp = vec![dto];
                     socket.write_message(Message::Text(to_string(&temp).unwrap())).unwrap();
                 }
