@@ -184,20 +184,24 @@ fn spread_signal(mut node: Node, board: &mut Vec<Vec<Node>>, socket: &mut WebSoc
 
 
     print!("This is the building: {:?}", node.get_building());
-    /*
+    
     if node.get_building() == "tower" {
         node.set_output(100);
     }
 
     else if node.get_building() == "extender" {
-        node.set_output(node.get_output() + 50);
+        if node.get_output() > &0 {
+            node.set_output(node.get_output() + 50);
+        } else {
+            node.set_output(0);
+        }
     }
-    */
+    
 
     //TODO: implement circular signal spreading
     //TODO: 5g, 4g, 3g, 2g, 1g
 
-    node.set_output(100);
+    //node.set_output(100);
 
     let mut mountain_source = false;
     if(node.get_landscape() == "mountain"){

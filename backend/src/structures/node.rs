@@ -157,7 +157,7 @@ impl Node {
             "forest" => 24,
             "water" => 8,
             "field" => 12,
-            "city" => 38,
+            "city" => 26,
             _ => 0,
         };
         &mut self.weight
@@ -202,7 +202,13 @@ impl Node {
 
     //Sets the output of the node
     pub fn set_output(&mut self, output: i32) -> &mut i32 {
-        self.output = output;
+        if (output < 0) {
+            self.output = 0;
+        } else if (output > 100) {
+            self.output = 100;
+        } else {
+            self.output = output;
+        }
         
         &mut self.output
     }
