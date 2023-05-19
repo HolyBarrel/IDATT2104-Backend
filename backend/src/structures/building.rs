@@ -1,5 +1,6 @@
 // Defines the structure of a node in the graph
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct Building {
     x: i32,
     y: i32,
