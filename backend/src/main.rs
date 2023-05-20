@@ -15,7 +15,7 @@ use std::sync::RwLockWriteGuard;
 use queues::*;
 
 fn main() {
-    let server = TcpListener::bind("10.24.21.220:8765").unwrap();
+    let server = TcpListener::bind("192.168.0.188:8765").unwrap();
     let connections = Arc::new(Mutex::new(Vec::new()));
 
     for stream in server.incoming() {
@@ -136,9 +136,10 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
                     }
                     let x = building_guard.pop().unwrap();
                     spread_signal(guard[*x.get_x() as usize][*x.get_y() as usize].clone(),&mut guard, socket, read_guard_network_clone.to_string());
-                    new_extenders.push(x)
-
+                    new_extenders.push(x);
+                    println!("extender ");
                 }
+                println!("New loop ");
                 for new in new_extenders{
                     building_guard.push(new);
                 }
