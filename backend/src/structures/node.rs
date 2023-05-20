@@ -15,7 +15,7 @@ pub struct Node {
 
 impl Ord for Node {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.weight.cmp(&other.weight)
+        self.output.cmp(&other.output)
     }
 }
 
