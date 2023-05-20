@@ -5,12 +5,13 @@ use serde_json::{Result, from_str, to_string};
 use tungstenite::{WebSocket, Message, accept};
 use std::net::{TcpListener,TcpStream};
 mod structures;
-use structures::dto::NodeDTO;
-use structures::node::Node;
-use structures::node_queue::NodeQueue;
+use structures::{
+    dto::{NodeDTO, AnswerDTO},
+    node::Node,
+    node_queue::NodeQueue,
+    building::Building,
+};
 use std::collections::HashSet;
-use structures::dto::AnswerDTO;
-use structures::building::Building;
 use std::sync::RwLockWriteGuard;
 use queues::*;
 
@@ -39,7 +40,8 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
     let vec_copy :Vec<Building>= vec![];
     let antennas = Arc::new(RwLock::new(vec_buildings));
     let extenders = Arc::new(RwLock::new(vec_copy));
-    let board_lock = Arc::new(RwLock::new(vec![vec![Node::new(-1, -1);100];100]));
+    const BOARD_SIZE: usize = 100;
+    let board_lock = Arc::new(RwLock::new(vec![vec![Node::new(-1, -1);BOARD_SIZE];BOARD_SIZE]));
     while let Ok(msg) = socket.read_message() {
         let network_type_clone= network_type.clone();
         
@@ -142,19 +144,19 @@ fn handle_connection(socket: &mut WebSocket<TcpStream>) {
 
                 // Loop through each building in the extenders vector
                 while !building_guard.is_empty() {
-                    let mut sort_nodes = vec![];
                     let building_clone = building_guard.clone();
-
-                    // Create a list of nodes for each building in the extenders
-                    for building in building_clone.into_iter(){
+                    let mut unique_buildings = HashSet::new();
+                    
+                    // Create a set of unique nodes for each building in the extenders
+                    for building in building_clone.into_iter() {
                         let tem = guard[*building.get_x() as usize][*building.get_y() as usize].clone();
-                        sort_nodes.push(tem)
+                        unique_buildings.insert(tem);
                     }
+                    let mut sort_nodes: Vec<_> = unique_buildings.into_iter().collect();
                     sort_nodes.sort();
-
                     // Clear the building_guard and add the sorted nodes back
                     building_guard.clear();
-                    for node in sort_nodes{
+                    for node in sort_nodes {
                         building_guard.push(Building::new(*node.get_x(), *node.get_y(), "extender".to_string()))
                     }
 
