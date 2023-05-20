@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Run
+      run: cd backend && cargo run
     - name: Build
       run: cd backend && cargo build --verbose
     - name: Run tests
